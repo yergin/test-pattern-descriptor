@@ -17,7 +17,8 @@ Name and background color (black):
 ```
 {
   "name": "BT2111 HLG Narrow",
-  "col10": 0
+  "depth": 10
+  "color": 0
 }
 ```
 
@@ -52,7 +53,7 @@ A gray patch 2 cells tall in the last column, first 2 rows:
   "height": [90,540,90,90]
   "patch": {
     "left": 14, "bottom": 2,
-    "col10": 414
+    "color": 414
   }
 }
 ```
