@@ -27,10 +27,30 @@ def asArray(val):
         return val
     return [val]
 
+# Blend between two float or integer colours
+def blendColors(col1, col2, t):
+    if isinstance(asColor(col1)[0], int):
+        return [int(c1 + t * (c2 - c1) + 0.5) for c1, c2 in zip(asColor(col1), asColor(col2))]
+    return [c1 + t * (c2 - c1) for c1, c2 in zip(asColor(col1), asColor(col2))]
+
+# Fill with horizontal gradient.
+def horizontalRamp(image, col1, col2):
+    for x in range(np.shape(image)[1]):
+        image[:, x] = blendColors(col1, col2, x / (np.shape(image)[1] - 1))
+    
+# Fill with vertical gradient.
+def verticalRamp(image, col1, col2):
+    for y in range(np.shape(image)[0]):
+        image[y, :] = blendColors(col1, col2, y / (np.shape(image)[0] - 1))
+
 # A recursive function for drawing patches.
 def drawPatch(image, tpat):
     if 'color' in tpat:
         image[:] = asColor(tpat['color']) # patch background color
+    elif 'hramp' in tpat:
+        horizontalRamp(image[:], tpat['hramp'][0], tpat['hramp'][1])
+    elif 'vramp' in tpat:
+        verticalRamp(image[:], tpat['vramp'][0], tpat['vramp'][1])
 
     if not 'patch' in tpat:
         return # there are no sub-patches so we return here
