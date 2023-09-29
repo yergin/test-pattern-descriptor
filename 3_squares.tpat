@@ -1,0 +1,21 @@
+{
+  "name": "3 squares",
+  "depth": 32,
+  "width": [210,360,210,360,210,360,210],
+  "height": [360,360,360],
+  "hramp": [0,1],
+  "subpatches": [
+    {
+      "left": 1, "top": 1,
+      "color": 0.5
+    },
+    {
+      "left": 3,
+      "color": 0.5
+    },
+    {
+      "left": 5,
+      "color": 0.5
+    }
+  ]
+}

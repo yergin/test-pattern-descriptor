@@ -28,31 +28,31 @@ def asArray(val):
     return [val]
 
 # Blend between two float or integer colours
-def blendColors(col1, col2, t):
-    if isinstance(asColor(col1)[0], int):
-        return [int(c1 + t * (c2 - c1) + 0.5) for c1, c2 in zip(asColor(col1), asColor(col2))]
-    return [c1 + t * (c2 - c1) for c1, c2 in zip(asColor(col1), asColor(col2))]
+def blendColors(col1, col2, t, is_float):
+    if is_float:
+        return [c1 + t * (c2 - c1) for c1, c2 in zip(asColor(col1), asColor(col2))]
+    return [int(c1 + t * (c2 - c1) + 0.5) for c1, c2 in zip(asColor(col1), asColor(col2))]
 
 # Fill with horizontal gradient.
-def horizontalRamp(image, col1, col2):
+def horizontalRamp(image, col1, col2, is_float):
     for x in range(np.shape(image)[1]):
-        image[:, x] = blendColors(col1, col2, x / (np.shape(image)[1] - 1))
+        image[:, x] = blendColors(col1, col2, x / (np.shape(image)[1] - 1), is_float)
     
 # Fill with vertical gradient.
-def verticalRamp(image, col1, col2):
+def verticalRamp(image, col1, col2, is_float):
     for y in range(np.shape(image)[0]):
-        image[y, :] = blendColors(col1, col2, y / (np.shape(image)[0] - 1))
+        image[y, :] = blendColors(col1, col2, y / (np.shape(image)[0] - 1), is_float)
 
 # A recursive function for drawing patches.
-def drawPatch(image, tpat):
+def drawPatch(image, tpat, is_float):
     if 'color' in tpat:
         image[:] = asColor(tpat['color']) # patch background color
     elif 'hramp' in tpat:
-        horizontalRamp(image[:], tpat['hramp'][0], tpat['hramp'][1])
+        horizontalRamp(image[:], tpat['hramp'][0], tpat['hramp'][1], is_float)
     elif 'vramp' in tpat:
-        verticalRamp(image[:], tpat['vramp'][0], tpat['vramp'][1])
+        verticalRamp(image[:], tpat['vramp'][0], tpat['vramp'][1], is_float)
 
-    if not 'patch' in tpat:
+    if not 'subpatches' in tpat:
         return # there are no sub-patches so we return here
     
     x = np.cumsum([0] + asArray(tpat['width'])) # calculate the grid of x offsets
@@ -65,7 +65,7 @@ def drawPatch(image, tpat):
     hgt = 1
     
     # Iterate through each sub-patch.
-    for p in asArray(tpat['patch']):
+    for p in asArray(tpat['subpatches']):
         if isinstance(p, dict):
             if 'left' in p:
                 left = p['left']
@@ -76,13 +76,11 @@ def drawPatch(image, tpat):
             if 'bottom' in p:
                 hgt = p['bottom'] - top
         
-        #print(f"Patch pos: ({left},{top})  size: {wid}x{hgt}")
-        
         # The patch's rect in pixels.
         rect = image[y[top]:y[top + hgt], x[left]:x[left + wid]]
         
         if isinstance(p, dict):
-            drawPatch(rect, p) # the sub-patch defined as a dict therefore recurse
+            drawPatch(rect, p, is_float) # the sub-patch defined as a dict therefore recurse
         else:
             rect[:] = asColor(p) # the sub-patch is defined as color value
             
@@ -113,7 +111,7 @@ def tpat2tiff(tpat_in, tiff_out):
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
     image = np.zeros((height, width, 3), np.int32 if bits <= 16 else np.float32)
-    drawPatch(image, tpat)
+    drawPatch(image, tpat, bits == 32)
     
     if bits == 8:
         bit_depth = "uint8"
@@ -127,7 +125,7 @@ def tpat2tiff(tpat_in, tiff_out):
         bit_depth = "float32"
         scaleUp = 1
         scaleDown = 0
-    image = (image * scaleUp) + (image / scaleDown)
+    image = (image * scaleUp) + (image / scaleDown if scaleDown > 0 else 0)
     
     colour.io.write_image(image.astype(bit_depth), tiff_out, bit_depth)
     

@@ -1,138 +1,102 @@
-JSON Test Pattern Descriptor
-============================
+"T-PAT" - Test Pattern Descriptor Specification
+===============================================
 
-Color
------
+The purpose of T-PAT (**T**est **PAT**tern) files is to concisely describe the positioning and colours of rectangular color patches in a test pattern image. They can serve as specifications from which test pattern images can be generated. T-PAT files are JSON files with a `.tpat` extension.
 
-Examples:
-- `"col": 0.1` - normalised grey scale (0.1, 0.1, 0.1)
-- `"col": [0.1, 0.5, 0.9]` - Normalised 0-to-1
-- `"col10": [651, 286, 705]` - 10-bit
-- `"col12": [2604, 1144, 2820]` - 12-bit
+Each T-PAT file represents a test pattern image of a specified size and bit-depth. It contains hierarchical data describing the layout and color of each color patch with its 'container' patch. At the top of the hierarchy is the top-level patch representing the entire image. Patches can be split into a grid of "cells" which serve to locate "sub-patches".
 
-Top-level fields
-----------------
+Top-level patch fields
+----------------------
 
-Name and background color (black):
+| Field | Type | Required | Description |
+| - | - | - | - |
+| **name** | string | no | A name describing the test pattern |
+| **depth** | integer | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
+| **width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid*. |
+| **height** | integer or array of integers | yes | The heights in pixels of each row of the image's grid*. |
+| **color** | color (see [Specifying colors](#specifying-colors) below) | no | The image's solid background color. |
+| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | no | The image's background horizontal gradient. |
+| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | no | The image's background vertical gradient. |
+| **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | no | The image's top-level sub-patches |
+
+(*)If either of these are defined as arrays, their sum will determine the total width and height of the image, respectively.
+
+Only one of **color**, **hramp** or **vramp** may be defined. If no background is specified, the image's background color will be black.
+
+Specifying colors
+-----------------
+
+Colors can be specified as either a single value, representing the color's greyscale value, or a number array (triplet) representing the color's individual RGB components. If **depth** is either of 8, 10, 12 or 16, greyscale or component values are interpreted as integers whereas if **depth** is 32, greyscale or component values are interpreted as floats.
+
+10-bit integer examples: `940`, `[940,940,64]`
+
+32-bit float examples: `0.5`, `[0.5,0.5,0]`
+
+Specifying gradients
+--------------------
+
+Gradients, wether vertical or horizontal, are defined as an array of two color values, the first being the left-most or top-most color and the second being the right-most or bottom-most color.
+
+10-bit integer examples: `[0,940]`, `[[0,940,940],[940,0,0]]`, `[0,[940,0,0]]`
+
+32-bit float examples: `[0,1]`, `[[0,1,0.5],[1,0,0.5]]`, `[0,[1,0,0]]`
+
+Sub-patches
+-----------
+
+Each sub-patch may be defined as a simple color value (see [Specifying colors](#specifying-colors) above) or as a JSON object with the field described below. Sub-patches are always defines inside arrays and the first sub-patch defaults to filling the top-left cell in the containing patch's grid, while subsequent patches fill the grid in a left-to-right then top-to-bottom order. This allows Sub-patches to be simply listed as colors without the need to define each sub-patch's position explicitly.
+
+| Field | Type | Required | Description |
+| - | - | - | - |
+| **width** | integer or array of integers | no | The widths in pixels of each column of the sub-patches inner grid. |
+| **height** | integer or array of integers | no | The heights in pixels of each row of the sub-patches inner grid. |
+| **color** | color (see [Specifying colors](#specifying-colors) above) | no | The sub-patch's solid background color. |
+| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | no | The sub-patch's background horizontal gradient. |
+| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | no | The sub-patch's background vertical gradient. |
+| **left** | integer | no | The sub-patch's left position in its containing patch's grid*. |
+| **right** | integer | no | The sub-patch's right position in its containing patch's grid*. |
+| **top** | integer | no | The sub-patch's top position in its containing patch's grid*. |
+| **bottom** | integer | no | The sub-patch's bottom position in its containing patch's grid*. |
+| **subpatches** | array of sub-patches | no | The sub-patch's own sub-patches |
+
+(*)**left**, **top**, **right** and **bottom** are always expressed in cells of the containing patch. Specifying **left** or **top** overrides the sub-patch's default location which is always the next position in the containing patch's grid. **right** and **bottom** override the sub-patch's default width and height which is otherwise inherited from the previous patch. The width and height also determine the X and Y increment for the sub-patch's default location.
+
+Example
+=======
+
+Below are the contents of the file `3_squares.tpat` included in this repository. The pattern is for a 32-bit image with three grey squares on top of a horizontal grey-scale gradient. The 3 squares are positioned in a 7x3 grid in cells located at: (1, 1), (3, 1) and (5, 1).
+
 ```
 {
-  "name": "BT2111 HLG Narrow",
-  "depth": 10
-  "color": 0
-}
-```
-
-The default background color is black.
-
-Grid
-----
-
-Two cells stacked on top of each other (1920x810 and 1920x270):
-```
-{
-  "width": 1920,
-  "height": [810,270]
-}
-```
-
-A grid of 15x4 (60) cells in an area the size of 1920x810:
-```
-{
-  "width": [240,206,103,103,103,103,102,102,103,103,103,103,103,103,240],
-  "height": [90,540,90,90]
-}
-```
-
-Patches
--------
-
-A gray patch 2 cells tall in the last column, first 2 rows:
-```
-{
-  "width": [240,206,103,103,103,103,102,102,103,103,103,103,103,103,240],
-  "height": [90,540,90,90]
-  "patch": {
-    "left": 14, "bottom": 2,
-    "color": 414
-  }
-}
-```
-
-By default, the first patch begins at "top": 0, "left": 0 and its width and height is 1 cell.
-
-Rows of patches, each patch inheriting the width, height and color representation of the previous patch:
-```
-{
-  "width": [240,206,103,103,103,103,102,102,103,103,103,103,103,103,240],
-  "height": [90,540,90,90]
-  "patch": [
+  "name": "3 squares",
+  "depth": 32,
+  "width": [210,360,210,360,210,360,210],
+  "height": [360,360,360],
+  "hramp": [0,1],
+  "subpatches": [
     {
-      "bottom": 2, 
-      "col10": 414
+      "left": 1, "top": 1,
+      "color": 0.5
     },
     {
-      "bottom": 1,
-      "col10": 940
-    },
-    [940,940,64],[64,940,940],[64,940,64],[940,64,940],[940,64,64],[64,64,940],
-    {
-      "bottom": 2,
-      "col10": 414
+      "left": 3,
+      "color": 0.5
     },
     {
-      "top": 1, "bottom": 2, "left": 1,
-      "col10": 721
-    },
-    [721,721,64],[64,721,721],[64,721,64],[721,64,721],[721,64,64],[64,64,721]
-  ]
-}
-```
-
-The above example shows that patches can be defined as an array of color values but they may even be defined as a simple number representing the greyscale color.
-
-Ramps:
-```
-{
-  "left": {
-    "grid": 2,
-    "col10": 4
-  },
-  "right": { "col10": 1019 }
-}
-```
-
-Nested cells
-------------
-
-```
-{
-  "name": "BT2111 HLG 10bit Narrow",
-  "col10": 0,
-  "width": 1920,
-  "height": [810,270],
-  "patch": [
-    {
-      "width": [240,206,103,103,103,103,102,102,103,103,103,103,103,103,240],
-      "height": [90,540,90,90]
-      "patch": [
-        {
-          "bottom": 2,
-          "col10": 414
-        },
-        {
-          "bottom": 1,
-          "col10": 940
-        },
-        [940,940,64],[64,940,940],[64,940,64],[940,64,940],[940,64,64],[64,64,940],
-        {
-          "bottom": 2,
-          "col10": 414
-        }
-      ]
-    },
-    {
-      "top": 1
+      "left": 5,
+      "color": 0.5
     }
   ]
 }
+```
+
+See the file `BT2111_HLG_10bit_narrow.tpat` for a more complete example.
+
+Generating test pattern TIFF images
+===================================
+
+The python script `tpat2tiff.py` included in this repository generates a TIFF image file from a T-PAT file. Run the following command to generate a BT.2111 HLG 10-bit narrow-range test pattern image:
+
+```
+python3 tpat2tiff.py BT2111_HLG_10bit_narrow.tpat
 ```
