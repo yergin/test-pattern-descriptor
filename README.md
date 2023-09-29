@@ -44,7 +44,7 @@ Gradients, wether vertical or horizontal, are defined as an array of two color v
 Sub-patches
 -----------
 
-Each sub-patch may be defined as a simple color value (see [Specifying colors](#specifying-colors) above) or as a JSON object with the field described below. Sub-patches are always defines inside arrays and the first sub-patch defaults to filling the top-left cell in the containing patch's grid, while subsequent patches fill the grid in a left-to-right then top-to-bottom order. This allows Sub-patches to be simply listed as colors without the need to define each sub-patch's position explicitly.
+Each sub-patch may be defined as a simple color value (see [Specifying colors](#specifying-colors) above) or as a JSON object containing the fields described below. Sub-patches are always defined inside arrays and the first sub-patch defaults to filling the top-left cell in the containing patch's grid, while subsequent patches fill the grid in a left-to-right then top-to-bottom order. This allows Sub-patches to be simply listed as colors without the need to define each sub-patch's position explicitly.
 
 | Field | Type | Required | Description |
 | - | - | - | - |
