@@ -9,10 +9,10 @@
 ##  Created by Gino Bollaert on 2023-09-29.
 ##
 
-import sys
-import numpy as np
-import colour
 import json
+import numpy as np
+import sys
+import tifffile as tiff
 
 # If 'col' has a length, assume it is already color triplet otherwise treat it as a single
 # greyscale color value.
@@ -27,7 +27,7 @@ def asArray(val):
         return val
     return [val]
 
-# Blend between two float or integer colours
+# Blend between two float or integer colors
 def blendColors(col1, col2, t, is_float):
     if is_float:
         return [c1 + t * (c2 - c1) for c1, c2 in zip(asColor(col1), asColor(col2))]
@@ -127,7 +127,7 @@ def tpat2tiff(tpat_in, tiff_out):
         scaleDown = 0
     image = (image * scaleUp) + (image / scaleDown if scaleDown > 0 else 0)
     
-    colour.io.write_image(image.astype(bit_depth), tiff_out, bit_depth)
+    tiff.imwrite(tiff_out, image.astype(bit_depth))
     
 def main():
     if len(sys.argv) < 2:
