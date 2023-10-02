@@ -37,7 +37,7 @@ Colors can be specified as either a single value, representing the color's greys
 Specifying gradients
 --------------------
 
-Linear gradients, wether vertical or horizontal, are defined as an array of two color values, the first corresponding to the color at the left-most or top-most pixel within the patch and the second corresponding to the right-most or bottom-most pixel within the patch.
+Linear gradients, whether horizontal or vertical, are defined as an array of two color values, the first corresponding to the color at the left-most or top-most pixel within the patch and the second corresponding to the right-most or bottom-most pixel within the patch.
 
 10-bit integer examples: `[0, 940]`, `[[0, 940, 940], [940, 0, 0]]`, `[0, [940, 0, 0]]`
 
