@@ -37,7 +37,7 @@ def blendColors(col1, col2, t, is_float):
 def horizontalRamp(image, col1, col2, is_float):
     for x in range(np.shape(image)[1]):
         image[:, x] = blendColors(col1, col2, x / (np.shape(image)[1] - 1), is_float)
-    
+
 # Fill with vertical gradient.
 def verticalRamp(image, col1, col2, is_float):
     for y in range(np.shape(image)[0]):
@@ -54,16 +54,16 @@ def drawPatch(image, tpat, is_float):
 
     if not 'subpatches' in tpat:
         return # there are no sub-patches so we return here
-    
+
     x = np.cumsum([0] + asArray(tpat['width'])) # calculate the grid of x offsets
     y = np.cumsum([0] + asArray(tpat['height'])) # calculate the grid of y offsets
-    
+
     # Default rect, in grid cells not pixels, of the first sub-patch.
     left = 0
     top = 0
     wid = 1
     hgt = 1
-    
+
     # Iterate through each sub-patch.
     for p in asArray(tpat['subpatches']):
         if isinstance(p, dict):
@@ -75,44 +75,50 @@ def drawPatch(image, tpat, is_float):
                 wid = p['right'] - left
             if 'bottom' in p:
                 hgt = p['bottom'] - top
-        
+
         # The patch's rect in pixels.
         rect = image[y[top]:y[top + hgt], x[left]:x[left + wid]]
-        
+
         if isinstance(p, dict):
             drawPatch(rect, p, is_float) # the sub-patch is defined as a dict, therefore recurse
         else:
             rect[:] = asColor(p) # the sub-patch is defined as a color value
-            
+
         # Offset the next patch by 'wid' cells to the right by default.
         left += wid
-        
+
         # If the next patch's position surpasses the right edge of the grid, move it to the start of
         # the next row, assuming rows are 'hgt' cells high.
         if left + wid >= len(x):
             left = 0
             top += hgt
 
-# Draw and save a TIFF file from a TPAT file.
+# Draw and save a TIFF file from a T-PAT file.
 def tpat2tiff(tpat_in, tiff_out):
     f = open(tpat_in)
     tpat = json.load(f)
     f.close()
-    
-    # If the TIFF's file name is not defined, use the TPAT's 'name' field, otherwise use the name
-    # of the TPAT file itself.
+
+    # Check the T-PAT version number
+    if 'version' in tpat:
+        if tpat['version'] != 1:
+            print(f"This tool supports V1 T-PAT files only")
+            exit(1)
+
+    # If the TIFF's file name is not defined, use the T-PAT's 'name' field, otherwise use the name
+    # of the T-PAT file itself.
     if tiff_out is None:
         tiff_out = (tpat['name'].replace(' ', '_') if 'name' in tpat else tpat_in) + '.tif'
-        
+
     # Sum the cell widths and heights to get the total image size.
     width = sum(asArray(tpat['width']))
     height = sum(asArray(tpat['height']))
-    
+
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
     image = np.zeros((height, width, 3), np.int32 if bits <= 16 else np.float32)
     drawPatch(image, tpat, bits == 32)
-    
+
     if bits == 8:
         bit_depth = "uint8"
         scaleUp = 1
@@ -126,9 +132,9 @@ def tpat2tiff(tpat_in, tiff_out):
         scaleUp = 1
         scaleDown = 0
     image = (image * scaleUp) + (image / scaleDown if scaleDown > 0 else 0)
-    
+
     tiff.imwrite(tiff_out, image.astype(bit_depth))
-    
+
 def main():
     if len(sys.argv) < 2:
         print(f"Usage:  python {sys.argv[0]} <TPAT_file_in> [<TIFF_file_out>]")

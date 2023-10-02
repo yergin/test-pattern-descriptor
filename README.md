@@ -1,5 +1,5 @@
-"T-PAT": Test Pattern Descriptor Specification V1.0 - *DRAFT*
-=============================================================
+"T-PAT": Test Pattern Descriptor Specification V1 - *DRAFT*
+===========================================================
 
 *Updated: 2023-10-02*
 
@@ -12,6 +12,7 @@ Top-level patch fields
 
 | Field | Type | Required | Description |
 | - | - | - | - |
+| **version** | integer | no | The T-PAT version number (defaults to 1 if omitted) |
 | **name** | string | no | A name describing the test pattern |
 | **depth** | integer | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
 | **width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid*. |
