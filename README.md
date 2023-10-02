@@ -1,5 +1,5 @@
-"T-PAT": Test Pattern Descriptor Specification V1 - *DRAFT*
-===========================================================
+"T-PAT": Test Pattern Descriptor Specification V1
+=================================================
 
 *Updated: 2023-10-02*
 
@@ -56,16 +56,18 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 | **color** | color (see [Specifying colors](#specifying-colors) above) | no | The sub-patch's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | no | The sub-patch's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | no | The sub-patch's background vertical gradient. |
-| **left** | integer | no | The sub-patch's left position in its containing patch's grid*. |
-| **right** | integer | no | The sub-patch's right position in its containing patch's grid*. |
-| **top** | integer | no | The sub-patch's top position in its containing patch's grid*. |
-| **bottom** | integer | no | The sub-patch's bottom position in its containing patch's grid*. |
+| **left** | integer | no | The sub-patch's left position in its containing patch's grid. |
+| **right** | integer | no | The sub-patch's right position in its containing patch's grid. |
+| **top** | integer | no | The sub-patch's top position in its containing patch's grid. |
+| **bottom** | integer | no | The sub-patch's bottom position in its containing patch's grid. |
 | **subpatches** | array of sub-patches | no | The sub-patch's own sub-patches |
 
-(*)**left**, **top**, **right** and **bottom** are always expressed in cells of the containing patch. Specifying **left** or **top** overrides the sub-patch's default location which is always the next position in the containing patch's grid. **right** and **bottom** override the sub-patch's default width and height which is otherwise inherited from the previous patch. The width and height also determine the X and Y increment for the sub-patch's default location.
+**left**, **top**, **right** and **bottom** are always expressed in cells of the containing patch. Specifying **left** or **top** overrides the sub-patch's default left or top positioning, respectively, which is always the next position along in the containing patch's grid, from left to right then from top to bottom. **right** and **bottom** override the sub-patch's default width and height which is otherwise inherited from the previous sub-patch. The width and height also determine the X and Y increment for the sub-patch's default location.
 
-Example
-=======
+As an example, if a sub-patch is located at row 1, column 2 and is 2 columns wide (`"top": 1, "left": 2, "right": 4`), the next sub-patch will be located, by default, at row 1, column 4 and will also be 2 columns wide. If the grid were only 5 columns wide, in order for it to not surpass the right edge of the grid, by default, the sub-patch would be re-positioned at the start of the next row: column 0, row 2.
+
+T-PAT file example
+==================
 
 Below are the contents of the file `3_squares.tpat` included in this repository. The pattern is for a 32-bit image with three grey squares on top of a horizontal grey-scale gradient. The 3 squares are positioned in a 7x3 grid in cells located at: (1, 1), (3, 1) and (5, 1).
 
