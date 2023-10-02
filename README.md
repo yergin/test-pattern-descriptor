@@ -1,5 +1,7 @@
-"T-PAT" - Test Pattern Descriptor Specification
-===============================================
+"T-PAT": Test Pattern Descriptor Specification V1.0 - *DRAFT*
+=============================================================
+
+*Updated: 2023-10-02*
 
 The purpose of T-PAT (**T**est **PAT**tern) files is to concisely describe the positioning and colors of rectangular color patches in a test pattern image. They can serve as specifications from which test pattern images can be generated. T-PAT files are JSON files with a `.tpat` extension.
 
@@ -28,18 +30,18 @@ Specifying colors
 
 Colors can be specified as either a single value, representing the color's greyscale value, or a number array (triplet) representing the color's individual RGB components. If **depth** is either of 8, 10, 12 or 16, greyscale or component values are interpreted as integers whereas if **depth** is 32, greyscale or component values are interpreted as floats.
 
-10-bit integer examples: `940`, `[940,940,64]`
+10-bit integer examples: `940`, `[940, 940, 64]`
 
-32-bit float examples: `0.5`, `[0.5,0.5,0]`
+32-bit float examples: `0.5`, `[0.5, 0.5, 0]`
 
 Specifying gradients
 --------------------
 
-Gradients, wether vertical or horizontal, are defined as an array of two color values, the first being the left-most or top-most color and the second being the right-most or bottom-most color.
+Linear gradients, wether vertical or horizontal, are defined as an array of two color values, the first corresponding to the color at the left-most or top-most pixel within the patch and the second corresponding to the right-most or bottom-most pixel within the patch.
 
-10-bit integer examples: `[0,940]`, `[[0,940,940],[940,0,0]]`, `[0,[940,0,0]]`
+10-bit integer examples: `[0, 940]`, `[[0, 940, 940], [940, 0, 0]]`, `[0, [940, 0, 0]]`
 
-32-bit float examples: `[0,1]`, `[[0,1,0.5],[1,0,0.5]]`, `[0,[1,0,0]]`
+32-bit float examples: `[0, 1]`, `[[0, 1, 0.5], [1, 0, 0.5]]`, `[0, [1, 0, 0]]`
 
 Sub-patches
 -----------
@@ -70,9 +72,9 @@ Below are the contents of the file `3_squares.tpat` included in this repository.
 {
   "name": "3 squares",
   "depth": 32,
-  "width": [210,360,210,360,210,360,210],
-  "height": [360,360,360],
-  "hramp": [0,1],
+  "width": [210, 360, 210, 360, 210, 360, 210],
+  "height": [360, 360, 360],
+  "hramp": [0, 1],
   "subpatches": [
     {
       "left": 1, "top": 1,

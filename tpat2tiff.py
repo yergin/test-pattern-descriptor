@@ -80,15 +80,15 @@ def drawPatch(image, tpat, is_float):
         rect = image[y[top]:y[top + hgt], x[left]:x[left + wid]]
         
         if isinstance(p, dict):
-            drawPatch(rect, p, is_float) # the sub-patch defined as a dict therefore recurse
+            drawPatch(rect, p, is_float) # the sub-patch is defined as a dict, therefore recurse
         else:
-            rect[:] = asColor(p) # the sub-patch is defined as color value
+            rect[:] = asColor(p) # the sub-patch is defined as a color value
             
         # Offset the next patch by 'wid' cells to the right by default.
         left += wid
         
-        # If the next patch's position surpasses the right edge of the grid, move it to the next
-        # row, assuming rows are 'hgt' cells high.
+        # If the next patch's position surpasses the right edge of the grid, move it to the start of
+        # the next row, assuming rows are 'hgt' cells high.
         if left + wid >= len(x):
             left = 0
             top += hgt
@@ -105,8 +105,8 @@ def tpat2tiff(tpat_in, tiff_out):
         tiff_out = (tpat['name'].replace(' ', '_') if 'name' in tpat else tpat_in) + '.tif'
         
     # Sum the cell widths and heights to get the total image size.
-    width = sum(tpat['width']) if hasattr(tpat['width'], "__len__") else tpat['width']
-    height = sum(tpat['height']) if hasattr(tpat['height'], "__len__") else tpat['height']
+    width = sum(asArray(tpat['width']))
+    height = sum(asArray(tpat['height']))
     
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
@@ -119,7 +119,7 @@ def tpat2tiff(tpat_in, tiff_out):
         scaleDown = 0
     elif bits <= 16:
         bit_depth = "uint16"
-        scaleUp = 2**(16 - bits) # shift up to MSBs
+        scaleUp = 2**(16 - bits) # shift right to fill MSBs
         scaleDown = 2**(2 * bits - 16) # fill LSBs with MSBs for full 16-bit scaling
     elif bits == 32:
         bit_depth = "float32"
