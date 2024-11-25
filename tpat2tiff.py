@@ -60,15 +60,31 @@ def verticalRamp(image, col1, col2, is_float):
 def horizontalGrating(image, func, half_period, col1, col2, is_float):
     if half_period == 1:
         func = square
-    for x in range(np.shape(image)[1]):
-        image[:, x] = func(col1, col2, x / half_period, is_float)
+    if hasattr(half_period, "__len__"):
+        f1 = 1.0 / half_period[0]
+        f2 = 1.0 / half_period[1]
+    else:
+        f1 = 1.0 / half_period
+        f2 = 1.0 / half_period
+    width = np.shape(image)[1]
+    a = (f2 - f1) / (width - 1)
+    for x in range(width):
+        image[:, x] = func(col1, col2, f1 * x + 0.5 * a * x * x, is_float)
 
 # Fill with horizontal frequency grating.
 def verticalGrating(image, func, half_period, col1, col2, is_float):
     if half_period == 1:
         func = square
-    for y in range(np.shape(image)[0]):
-        image[y, :] = func(col1, col2, y / half_period, is_float)
+    if hasattr(half_period, "__len__"):
+        f1 = 1.0 / half_period[0]
+        f2 = 1.0 / half_period[1]
+    else:
+        f1 = 1.0 / half_period
+        f2 = 1.0 / half_period
+    height = np.shape(image)[0]
+    a = (f2 - f1) / (height - 1)
+    for y in range(height):
+        image[y, :] = func(col1, col2, f1 * y + 0.5 * a * y * y, is_float)
 
 # A recursive function for drawing patches.
 def drawPatch(image, tpat, is_float):
