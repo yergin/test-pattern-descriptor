@@ -10,6 +10,7 @@
 ##
 
 import json
+import math
 import numpy as np
 import sys
 import tifffile as tiff
@@ -33,6 +34,18 @@ def blendColors(col1, col2, t, is_float):
         return [c1 + t * (c2 - c1) for c1, c2 in zip(asColor(col1), asColor(col2))]
     return [int(c1 + t * (c2 - c1) + 0.5) for c1, c2 in zip(asColor(col1), asColor(col2))]
 
+# Square-wave alternation between two colours
+def square(col1, col2, phase, is_float):
+    return col1 if phase % 2 < 1 else col2
+
+# Sinusoidal alternation between two colours
+def sine(col1, col2, phase, is_float):
+    return blendColors(col1, col2, (1 - math.sin(phase * math.pi)) / 2, is_float)
+
+# Same as sine but offset by a quarter cycle
+def cosine(col1, col2, phase, is_float):
+    return blendColors(col1, col2, (1 - math.cos(phase * math.pi)) / 2, is_float)
+
 # Fill with horizontal gradient.
 def horizontalRamp(image, col1, col2, is_float):
     for x in range(np.shape(image)[1]):
@@ -42,6 +55,20 @@ def horizontalRamp(image, col1, col2, is_float):
 def verticalRamp(image, col1, col2, is_float):
     for y in range(np.shape(image)[0]):
         image[y, :] = blendColors(col1, col2, y / (np.shape(image)[0] - 1), is_float)
+
+# Fill with horizontal frequency grating.
+def horizontalGrating(image, func, half_period, col1, col2, is_float):
+    if half_period == 1:
+        func = square
+    for x in range(np.shape(image)[1]):
+        image[:, x] = func(col1, col2, x / half_period, is_float)
+
+# Fill with horizontal frequency grating.
+def verticalGrating(image, func, half_period, col1, col2, is_float):
+    if half_period == 1:
+        func = square
+    for y in range(np.shape(image)[0]):
+        image[y, :] = func(col1, col2, y / half_period, is_float)
 
 # A recursive function for drawing patches.
 def drawPatch(image, tpat, is_float):
@@ -72,6 +99,18 @@ def drawPatch(image, tpat, is_float):
         horizontalRamp(rect[:], tpat['hramp'][0], tpat['hramp'][1], is_float)
     elif 'vramp' in tpat:
         verticalRamp(rect[:], tpat['vramp'][0], tpat['vramp'][1], is_float)
+    elif 'hsine' in tpat:
+        horizontalGrating(rect[:], sine, tpat['hsine'][0], tpat['hsine'][1], tpat['hsine'][2], is_float)
+    elif 'vsine' in tpat:
+        verticalGrating(rect[:], sine, tpat['vsine'][0], tpat['vsine'][1], tpat['vsine'][2], is_float)
+    elif 'hcosine' in tpat:
+        horizontalGrating(rect[:], cosine, tpat['hcosine'][0], tpat['hcosine'][1], tpat['hcosine'][2], is_float)
+    elif 'vcosine' in tpat:
+        verticalGrating(rect[:], cosine, tpat['vcosine'][0], tpat['vcosine'][1], tpat['vcosine'][2], is_float)
+    elif 'hsquare' in tpat:
+        horizontalGrating(rect[:], square, tpat['hsquare'][0], tpat['hsquare'][1], tpat['hsquare'][2], is_float)
+    elif 'vsquare' in tpat:
+        verticalGrating(rect[:], square, tpat['vsquare'][0], tpat['vsquare'][1], tpat['vsquare'][2], is_float)
 
     if not 'subpatches' in tpat:
         return # there are no sub-patches so we return here

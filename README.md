@@ -22,6 +22,10 @@ Top-level patch fields
 | **color** | color (see [Specifying colors](#specifying-colors) below) | 1 | no | The image's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background vertical gradient. |
+| **hsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background horizontal square frequency grating. |
+| **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical square frequency grating. |
+| **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background horizontal sinusoidal frequency grating. |
+| **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical sinusoidal frequency grating. |
 | **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | 1 | no | The image's top-level sub-patches |
 
 (*)If either of these are defined as arrays, their sum will determine the total width and height of the image, respectively.
@@ -46,6 +50,11 @@ Linear gradients, whether horizontal or vertical, are defined as an array of two
 
 32-bit float examples: `[0, 1]`, `[[0, 1, 0.5], [1, 0, 0.5]]`, `[0, [1, 0, 0]]`
 
+Specifying frequency gratings
+-----------------------------
+
+Frequency gratings, whether horizontal or vertical, sinusoidal or square, are defined as an array of an integer and two color values. The first integer specifies the half-period of repetition in pixels and the two color values corresponding to the alternating colours, the first one being the left or top-most color. `hcosine` and `vcosine` are equivalent to `hsine` and `vsine` with the only difference being the phase at which start.
+
 Sub-patches
 -----------
 
@@ -60,6 +69,10 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 | **color** | color (see [Specifying colors](#specifying-colors) above) | 1 | no | The sub-patch's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background vertical gradient. |
+| **hsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background horizontal square frequency grating. |
+| **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical square frequency grating. |
+| **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background horizontal sinusoidal frequency grating. |
+| **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical sinusoidal frequency grating. |
 | **left** | integer | 1 | no | The sub-patch's left position in its containing patch's grid starting at 0. |
 | **right** | integer | 1 | no | The sub-patch's right position in its containing patch's grid starting at 0. |
 | **top** | integer | 1 | no | The sub-patch's top position in its containing patch's grid starting at 0. |
