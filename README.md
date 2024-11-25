@@ -1,7 +1,7 @@
-"T-PAT": Test Pattern Descriptor Specification V1
+"T-PAT": Test Pattern Descriptor Specification V2
 =================================================
 
-*Updated: 2023-10-02*
+*Updated: 2024-11-25*
 
 The purpose of T-PAT (**T**est **PAT**tern) files is to concisely describe the positioning and colors of rectangular color patches in a test pattern image. They can serve as specifications from which test pattern images can be generated. T-PAT files are JSON files with a `.tpat` extension.
 
@@ -10,17 +10,19 @@ Each T-PAT file represents a test pattern image of a specified size and bit-dept
 Top-level patch fields
 ----------------------
 
-| Field | Type | Required | Description |
-| - | - | - | - |
-| **version** | integer | no | The T-PAT version number (defaults to 1 if omitted) |
-| **name** | string | no | A name describing the test pattern |
-| **depth** | integer | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
-| **width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid*. |
-| **height** | integer or array of integers | yes | The heights in pixels of each row of the image's grid*. |
-| **color** | color (see [Specifying colors](#specifying-colors) below) | no | The image's solid background color. |
-| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | no | The image's background horizontal gradient. |
-| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | no | The image's background vertical gradient. |
-| **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | no | The image's top-level sub-patches |
+| Field | Type | Version | Required | Description |
+| - | - | - | - | - |
+| **version** | integer | 1 | no | The T-PAT version number (defaults to 1 if omitted) |
+| **name** | string | 1 | no | A name describing the test pattern |
+| **depth** | integer | 1 | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
+| **width** | integer or array of integers | 1 | yes | The widths in pixels of each column of the image's grid*. |
+| **height** | integer or array of integers | 1 | yes | The heights in pixels of each row of the image's grid*. |
+| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
+| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
+| **color** | color (see [Specifying colors](#specifying-colors) below) | 1 | no | The image's solid background color. |
+| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background horizontal gradient. |
+| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background vertical gradient. |
+| **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | 1 | no | The image's top-level sub-patches |
 
 (*)If either of these are defined as arrays, their sum will determine the total width and height of the image, respectively.
 
@@ -49,18 +51,20 @@ Sub-patches
 
 Each sub-patch may be defined as a simple color value (see [Specifying colors](#specifying-colors) above) or as a JSON object containing the fields described below. Sub-patches are always defined inside arrays and the first sub-patch defaults to filling the top-left cell in the containing patch's grid, while subsequent patches fill the grid in a left-to-right then top-to-bottom order. This allows Sub-patches to be simply listed as colors without the need to define each sub-patch's position explicitly.
 
-| Field | Type | Required | Description |
-| - | - | - | - |
-| **width** | integer or array of integers | no | The widths in pixels of each column of the sub-patches inner grid. |
-| **height** | integer or array of integers | no | The heights in pixels of each row of the sub-patches inner grid. |
-| **color** | color (see [Specifying colors](#specifying-colors) above) | no | The sub-patch's solid background color. |
-| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | no | The sub-patch's background horizontal gradient. |
-| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | no | The sub-patch's background vertical gradient. |
-| **left** | integer | no | The sub-patch's left position in its containing patch's grid. |
-| **right** | integer | no | The sub-patch's right position in its containing patch's grid. |
-| **top** | integer | no | The sub-patch's top position in its containing patch's grid. |
-| **bottom** | integer | no | The sub-patch's bottom position in its containing patch's grid. |
-| **subpatches** | array of sub-patches | no | The sub-patch's own sub-patches |
+| Field | Type | Version | Required | Description |
+| - | - | - | - | - |
+| **width** | integer or array of integers | 1 | no | The widths in pixels of each column of the sub-patches inner grid. |
+| **height** | integer or array of integers | 1 | no | The heights in pixels of each row of the sub-patches inner grid. |
+| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
+| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
+| **color** | color (see [Specifying colors](#specifying-colors) above) | 1 | no | The sub-patch's solid background color. |
+| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background horizontal gradient. |
+| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background vertical gradient. |
+| **left** | integer | 1 | no | The sub-patch's left position in its containing patch's grid starting at 0. |
+| **right** | integer | 1 | no | The sub-patch's right position in its containing patch's grid starting at 0. |
+| **top** | integer | 1 | no | The sub-patch's top position in its containing patch's grid starting at 0. |
+| **bottom** | integer | 1 | no | The sub-patch's bottom position in its containing patch's grid starting at 0. |
+| **subpatches** | array of sub-patches | 1 | no | The sub-patch's own sub-patches |
 
 **left**, **top**, **right** and **bottom** are always expressed in cells of the containing patch. Specifying **left** or **top** overrides the sub-patch's default left or top positioning, respectively, which is always the next position along in the containing patch's grid, from left to right then from top to bottom. **right** and **bottom** override the sub-patch's default width and height which is otherwise inherited from the previous sub-patch. The width and height also determine the X and Y increment for the sub-patch's default location.
 

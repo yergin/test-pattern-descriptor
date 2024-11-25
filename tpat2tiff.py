@@ -45,18 +45,42 @@ def verticalRamp(image, col1, col2, is_float):
 
 # A recursive function for drawing patches.
 def drawPatch(image, tpat, is_float):
+    hborder = 0
+    vborder = 0
+    hspacing = 0
+    vspacing = 0
+    if 'border' in tpat:
+        border = tpat['border']
+        if hasattr(border, "__len__"):
+            hborder = border[0]
+            vborder = border[1]
+        else:
+            hborder = border
+            vborder = border
+    rect = image[vborder:, hborder:]
+    if 'spacing' in tpat:
+        spacing = tpat['spacing']
+        if hasattr(spacing, "__len__"):
+            hspacing = spacing[0]
+            vspacing = spacing[1]
+        else:
+            hspacing = spacing
+            vspacing = spacing
     if 'color' in tpat:
-        image[:] = asColor(tpat['color']) # patch background color
+        rect[:] = asColor(tpat['color']) # patch background color
     elif 'hramp' in tpat:
-        horizontalRamp(image[:], tpat['hramp'][0], tpat['hramp'][1], is_float)
+        horizontalRamp(rect[:], tpat['hramp'][0], tpat['hramp'][1], is_float)
     elif 'vramp' in tpat:
-        verticalRamp(image[:], tpat['vramp'][0], tpat['vramp'][1], is_float)
+        verticalRamp(rect[:], tpat['vramp'][0], tpat['vramp'][1], is_float)
 
     if not 'subpatches' in tpat:
         return # there are no sub-patches so we return here
 
-    x = np.cumsum([0] + asArray(tpat['width'])) # calculate the grid of x offsets
-    y = np.cumsum([0] + asArray(tpat['height'])) # calculate the grid of y offsets
+    # Interleave the grid widths with the border and spacings
+    x = [0, hborder] + [b for a in asArray(tpat['width']) for b in [a, hspacing]]
+    y = [0, vborder] + [b for a in asArray(tpat['height']) for b in [a, vspacing]]
+    x = np.cumsum(x) # calculate the grid of x offsets
+    y = np.cumsum(y) # calculate the grid of y offsets
 
     # Default rect, in grid cells not pixels, of the first sub-patch.
     left = 0
@@ -77,7 +101,7 @@ def drawPatch(image, tpat, is_float):
                 hgt = p['bottom'] - top
 
         # The patch's rect in pixels.
-        rect = image[y[top]:y[top + hgt], x[left]:x[left + wid]]
+        rect = image[y[top * 2 + 1]:y[(top + hgt) * 2], x[left * 2 + 1]:x[(left + wid) * 2]]
 
         if isinstance(p, dict):
             drawPatch(rect, p, is_float) # the sub-patch is defined as a dict, therefore recurse
@@ -89,7 +113,7 @@ def drawPatch(image, tpat, is_float):
 
         # If the next patch's position surpasses the right edge of the grid, move it to the start of
         # the next row, assuming rows are 'hgt' cells high.
-        if left + wid >= len(x):
+        if left + wid >= len(x) / 2:
             left = 0
             top += hgt
 
