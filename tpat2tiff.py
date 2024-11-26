@@ -262,8 +262,8 @@ def tpat2tiff(tpat_in, tiff_out):
 
     # Check the T-PAT version number.
     if 'version' in tpat:
-        if tpat['version'] != 1:
-            print(f"This tool supports V1 T-PAT files only")
+        if tpat['version'] > 2:
+            print(f"This tool supports version 1 and 2 T-PAT files only")
             exit(1)
 
     # If the TIFF's file name is not defined, use the T-PAT's 'name' field, otherwise use the name
