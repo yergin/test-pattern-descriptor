@@ -145,8 +145,6 @@ def composite_image(image, tpat, bits, directory):
     [hgt, wid] = image.shape[:2]
     if comp_wid > wid or comp_hgt > hgt:
         print("Image size is larger than its subpatch")
-        print(wid)
-        print(hgt)
         return
     x = (wid - comp_wid) // 2
     y = (hgt - comp_hgt) // 2
