@@ -197,7 +197,7 @@ def drawPatch(image, tpat, bits, directory):
 
     if not 'width' in tpat or not 'height' in tpat:
         composite_image(rect, tpat, bits, directory)
-        return # no sub-patches has been defined
+        return # no subpatch grid has been defined
 
     # Interleave the grid widths with the border and spacings
     x = [0, hborder] + [b for a in asArray(tpat['width']) for b in [a, hspacing]]
