@@ -26,6 +26,7 @@ Top-level patch fields
 | **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical square frequency grating. |
 | **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background horizontal sinusoidal frequency grating. |
 | **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical sinusoidal frequency grating. |
+| **image** | string | 2 | no | A TIFF file to be composited onto the image after subpatches have been drawn. If the file has an alpha channel, alpha premultiplication will be assumed. The path may be specified relative to T-PAT file. |
 | **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | 1 | no | The image's top-level sub-patches |
 
 (*)If width or height are defined as arrays, their sum will determine the total width and height of the image, respectively. The image size will also include any borders and spacings specified.
@@ -73,6 +74,7 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 | **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical square frequency grating. |
 | **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background horizontal sinusoidal frequency grating. |
 | **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical sinusoidal frequency grating. |
+| **image** | string | 2 | no | A TIFF file to be composited onto the subpatch after child subpatches have been drawn. If the file has an alpha channel, alpha premultiplication will be assumed. The path may be specified relative to T-PAT file. |
 | **left** | integer | 1 | no | The sub-patch's left position in its containing patch's grid starting at 0. |
 | **right** | integer | 1 | no | The sub-patch's right position in its containing patch's grid starting at 0. |
 | **top** | integer | 1 | no | The sub-patch's top position in its containing patch's grid starting at 0. |

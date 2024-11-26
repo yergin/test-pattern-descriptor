@@ -12,6 +12,8 @@
 import json
 import math
 import numpy as np
+import os
+import pathlib
 import sys
 import tifffile as tiff
 
@@ -120,8 +122,48 @@ def spacings(tpat):
             vspacing = spacing
     return (hspacing, vspacing, spacing_color)
 
+def convert_bits(image, from_bits, to_bits):
+    if from_bits == to_bits:
+        return image
+    if to_bits == 32:
+        return image.astype(np.float32) / (2**from_bits - 1)
+    if from_bits == 32:
+        return (image * (2**to_bits - 1) + 0.5).astype(np.int32)
+    return convert_bits(convert_bits(image, from_bits, 32), 32, to_bits)
+
+def composite_image(image, tpat, bits, directory):
+    if not 'image' in tpat:
+        return
+    path = tpat['image']
+    path = path if os.path.isabs(path) else os.path.join(directory, path)
+    comp = tiff.imread(path)
+    [comp_hgt, comp_wid, comp_ch] = comp.shape
+    if comp.dtype == np.float32 or comp.dtype == np.float64:
+        from_bits = 32
+    else:
+        from_bits = 8 if comp.dtype == np.uint8 else 16
+    [hgt, wid] = image.shape[:2]
+    if comp_wid > wid or comp_hgt > hgt:
+        print("Image size is larger than its subpatch")
+        print(wid)
+        print(hgt)
+        return
+    x = (wid - comp_wid) // 2
+    y = (hgt - comp_hgt) // 2
+    rect = image[y:y + comp_hgt, x:x + comp_wid]
+    if comp_ch == 3:
+        rect[:] = convert_bits(comp, from_bits, bits)
+        return
+    comp = convert_bits(comp, from_bits, 32)
+    dest = convert_bits(rect, bits, 32)
+
+    r, g, b, a = np.dsplit(comp, 4)
+    rgb = np.dstack((r, g, b))
+    rect[:] = convert_bits(dest * (1 - a) + rgb, 32, bits)
+
 # A recursive function for drawing patches.
-def drawPatch(image, tpat, is_float):
+def drawPatch(image, tpat, bits, directory):
+    is_float = bits == 32
     [height, width] = image.shape[:2]
     (hborder, vborder, border_color) = borders(tpat)
     (hspacing, vspacing, spacing_color) = spacings(tpat)
@@ -156,6 +198,7 @@ def drawPatch(image, tpat, is_float):
         verticalGrating(rect[:], square, tpat['vsquare'][0], tpat['vsquare'][1], tpat['vsquare'][2], is_float)
 
     if not 'width' in tpat or not 'height' in tpat:
+        composite_image(rect, tpat, bits, directory)
         return # no sub-patches has been defined
 
     # Interleave the grid widths with the border and spacings
@@ -167,11 +210,12 @@ def drawPatch(image, tpat, is_float):
     # Draw spacings if a color was specified
     if not spacing_color is None:
         for i in range(2, len(x) - 2, 2):
-            image[vborder:-vborder, x[i]:x[i + 1]] = spacing_color
+            image[vborder:height - vborder, x[i]:x[i + 1]] = spacing_color
         for i in range(2, len(y) - 2, 2):
-            image[y[i]:y[i + 1], hborder:-hborder] = spacing_color
+            image[y[i]:y[i + 1], hborder:width - hborder] = spacing_color
 
     if not 'subpatches' in tpat:
+        composite_image(image[vborder:height - vborder, hborder:width - hborder], tpat, bits, directory)
         return # there are no sub-patches so we return here
 
     # Default rect, in grid cells not pixels, of the first sub-patch.
@@ -193,12 +237,12 @@ def drawPatch(image, tpat, is_float):
                 hgt = p['bottom'] - top
 
         # The patch's rect in pixels.
-        rect = image[y[top * 2 + 1]:y[(top + hgt) * 2], x[left * 2 + 1]:x[(left + wid) * 2]]
+        subpatch = image[y[top * 2 + 1]:y[(top + hgt) * 2], x[left * 2 + 1]:x[(left + wid) * 2]]
 
         if isinstance(p, dict):
-            drawPatch(rect, p, is_float) # the sub-patch is defined as a dict, therefore recurse
+            drawPatch(subpatch, p, bits, directory) # the sub-patch is defined as a dict, therefore recurse
         else:
-            rect[:] = asColor(p) # the sub-patch is defined as a color value
+            subpatch[:] = asColor(p) # the sub-patch is defined as a color value
 
         # Offset the next patch by 'wid' cells to the right by default.
         left += wid
@@ -209,13 +253,16 @@ def drawPatch(image, tpat, is_float):
             left = 0
             top += hgt
 
+    # Composite images on top of subpatches.
+    composite_image(image[vborder:height - vborder, hborder:width - hborder], tpat, bits, directory)
+
 # Draw and save a TIFF file from a T-PAT file.
 def tpat2tiff(tpat_in, tiff_out):
     f = open(tpat_in)
     tpat = json.load(f)
     f.close()
 
-    # Check the T-PAT version number
+    # Check the T-PAT version number.
     if 'version' in tpat:
         if tpat['version'] != 1:
             print(f"This tool supports V1 T-PAT files only")
@@ -237,7 +284,7 @@ def tpat2tiff(tpat_in, tiff_out):
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
     image = np.zeros((height, width, 3), np.int32 if bits <= 16 else np.float32)
-    drawPatch(image, tpat, bits == 32)
+    drawPatch(image, tpat, bits, pathlib.Path(tpat_in).parent.resolve())
 
     if bits == 8:
         bit_depth = "uint8"
