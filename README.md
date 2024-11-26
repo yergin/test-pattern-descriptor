@@ -17,8 +17,8 @@ Top-level patch fields
 | **depth** | integer | 1 | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
 | **width** | integer or array of integers | 1 | yes | The widths in pixels of each column of the image's grid*. |
 | **height** | integer or array of integers | 1 | yes | The heights in pixels of each row of the image's grid*. |
-| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
-| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
+| **border** | integer or array of 2 integers and optional color | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
+| **spacing** | integer or array of 2 integers and optional color | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
 | **color** | color (see [Specifying colors](#specifying-colors) below) | 1 | no | The image's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background vertical gradient. |
@@ -53,7 +53,7 @@ Linear gradients, whether horizontal or vertical, are defined as an array of two
 Specifying frequency gratings
 -----------------------------
 
-Frequency gratings, whether horizontal or vertical, sinusoidal or square, are defined as an array of an integer and two color values. The first integer specifies the half-period of repetition in pixels and the two color values corresponding to the alternating colours, the first one being the left or top-most color. `hcosine` and `vcosine` are equivalent to `hsine` and `vsine` with the only difference being the phase at which start.
+Frequency gratings, whether horizontal or vertical, sinusoidal or square, are defined as a three-element array. The first element may either be an integer, float or a pair of integers or floats in an array. If the first element is a single value, it specifies the half-period of the gratings repetition in pixels, a half-period of 1 pixel representing the nyquist frequency. If the first element is a pair of values, these specify the starting and ending half-periods in a linear frequency sweep. The two subsequent elements specify the two colors the grating alternates between, the first one being the left-most or top-most color. `hcosine` and `vcosine` are equivalent to `hsine` and `vsine` with the only difference being the phase at which they start.
 
 Sub-patches
 -----------
@@ -64,8 +64,8 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 | - | - | - | - | - |
 | **width** | integer or array of integers | 1 | no | The widths in pixels of each column of the sub-patches inner grid. |
 | **height** | integer or array of integers | 1 | no | The heights in pixels of each row of the sub-patches inner grid. |
-| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
-| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
+| **border** | integer or array of 2 integers and optional color | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
+| **spacing** | integer or array of 2 integers and optional color | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
 | **color** | color (see [Specifying colors](#specifying-colors) above) | 1 | no | The sub-patch's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background vertical gradient. |

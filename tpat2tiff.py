@@ -92,23 +92,41 @@ def drawPatch(image, tpat, is_float):
     vborder = 0
     hspacing = 0
     vspacing = 0
+    border_color = None
+    spacing_color = None
+
     if 'border' in tpat:
         border = tpat['border']
         if hasattr(border, "__len__"):
             hborder = border[0]
             vborder = border[1]
+            if len(border) > 2:
+                border_color = asColor(border[2])
         else:
             hborder = border
             vborder = border
+
+    # Draw borders if a color was specified
+    if not border_color is None:
+        image[:, :hborder] = border_color
+        image[:, -hborder:] = border_color
+        image[:vborder, :] = border_color
+        image[-vborder:, :] = border_color
+
+    # Crop out borders for solid color, ramp or gratings
     rect = image[vborder:, hborder:]
+
     if 'spacing' in tpat:
         spacing = tpat['spacing']
         if hasattr(spacing, "__len__"):
             hspacing = spacing[0]
             vspacing = spacing[1]
+            if len(spacing) > 2:
+                spacing_color = asColor(spacing[2])
         else:
             hspacing = spacing
             vspacing = spacing
+
     if 'color' in tpat:
         rect[:] = asColor(tpat['color']) # patch background color
     elif 'hramp' in tpat:
@@ -136,6 +154,13 @@ def drawPatch(image, tpat, is_float):
     y = [0, vborder] + [b for a in asArray(tpat['height']) for b in [a, vspacing]]
     x = np.cumsum(x) # calculate the grid of x offsets
     y = np.cumsum(y) # calculate the grid of y offsets
+
+    # Draw spacings if a color was specified
+    if not spacing_color is None:
+        for i in range(2, len(x) - 2, 2):
+            image[vborder:-vborder, x[i]:x[i + 1]] = spacing_color
+        for i in range(2, len(y) - 2, 2):
+            image[y[i]:y[i + 1], hborder:-hborder] = spacing_color
 
     # Default rect, in grid cells not pixels, of the first sub-patch.
     left = 0
