@@ -15,10 +15,10 @@ Top-level patch fields
 | **version** | integer | 1 | no | The T-PAT version number (defaults to 1 if omitted) |
 | **name** | string | 1 | no | A name describing the test pattern |
 | **depth** | integer | 1 | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
-| **width** | integer or array of integers | 1 | yes | The widths in pixels of each column of the image's grid*. |
-| **height** | integer or array of integers | 1 | yes | The heights in pixels of each row of the image's grid*. |
-| **border** | integer or array of 2 integers and optional color | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
-| **spacing** | integer or array of 2 integers and optional color | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
+| **width** | integer or array of integers | 1 | yes | The widths in pixels of each column of the image's grid.* |
+| **height** | integer or array of integers | 1 | yes | The heights in pixels of each row of the image's grid.* |
+| **border** | integer or array of 2 integers and optional color | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer.* |
+| **spacing** | integer or array of 2 integers and optional color | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer.* |
 | **color** | color (see [Specifying colors](#specifying-colors) below) | 1 | no | The image's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background vertical gradient. |
@@ -28,7 +28,7 @@ Top-level patch fields
 | **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical sinusoidal frequency grating. |
 | **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | 1 | no | The image's top-level sub-patches |
 
-(*)If either of these are defined as arrays, their sum will determine the total width and height of the image, respectively.
+(*)If width or height are defined as arrays, their sum will determine the total width and height of the image, respectively. The image size will also include any borders and spacings specified.
 
 Only one of **color**, **hramp** or **vramp** may be defined. If no background is specified, the image's background color will be black.
 

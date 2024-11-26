@@ -86,15 +86,11 @@ def verticalGrating(image, func, half_period, col1, col2, is_float):
     for y in range(height):
         image[y, :] = func(col1, col2, f1 * y + 0.5 * a * y * y, is_float)
 
-# A recursive function for drawing patches.
-def drawPatch(image, tpat, is_float):
+# Get the patch's border settings
+def borders(tpat):
     hborder = 0
     vborder = 0
-    hspacing = 0
-    vspacing = 0
     border_color = None
-    spacing_color = None
-
     if 'border' in tpat:
         border = tpat['border']
         if hasattr(border, "__len__"):
@@ -105,17 +101,13 @@ def drawPatch(image, tpat, is_float):
         else:
             hborder = border
             vborder = border
+    return (hborder, vborder, border_color)
 
-    # Draw borders if a color was specified
-    if not border_color is None:
-        image[:, :hborder] = border_color
-        image[:, -hborder:] = border_color
-        image[:vborder, :] = border_color
-        image[-vborder:, :] = border_color
-
-    # Crop out borders for solid color, ramp or gratings
-    rect = image[vborder:, hborder:]
-
+# Get the patch's spacing settings
+def spacings(tpat):
+    hspacing = 0
+    vspacing = 0
+    spacing_color = None
     if 'spacing' in tpat:
         spacing = tpat['spacing']
         if hasattr(spacing, "__len__"):
@@ -126,6 +118,23 @@ def drawPatch(image, tpat, is_float):
         else:
             hspacing = spacing
             vspacing = spacing
+    return (hspacing, vspacing, spacing_color)
+
+# A recursive function for drawing patches.
+def drawPatch(image, tpat, is_float):
+    [height, width] = image.shape[:2]
+    (hborder, vborder, border_color) = borders(tpat)
+    (hspacing, vspacing, spacing_color) = spacings(tpat)
+
+    # Draw borders if a color was specified
+    if not border_color is None:
+        image[:, :hborder] = border_color
+        image[:, width - hborder:] = border_color
+        image[:vborder, :] = border_color
+        image[height - vborder:, :] = border_color
+
+    # Crop out borders for solid color, ramp or gratings
+    rect = image[vborder:height - vborder, hborder:width - hborder]
 
     if 'color' in tpat:
         rect[:] = asColor(tpat['color']) # patch background color
@@ -146,8 +155,8 @@ def drawPatch(image, tpat, is_float):
     elif 'vsquare' in tpat:
         verticalGrating(rect[:], square, tpat['vsquare'][0], tpat['vsquare'][1], tpat['vsquare'][2], is_float)
 
-    if not 'subpatches' in tpat:
-        return # there are no sub-patches so we return here
+    if not 'width' in tpat or not 'height' in tpat:
+        return # no sub-patches has been defined
 
     # Interleave the grid widths with the border and spacings
     x = [0, hborder] + [b for a in asArray(tpat['width']) for b in [a, hspacing]]
@@ -161,6 +170,9 @@ def drawPatch(image, tpat, is_float):
             image[vborder:-vborder, x[i]:x[i + 1]] = spacing_color
         for i in range(2, len(y) - 2, 2):
             image[y[i]:y[i + 1], hborder:-hborder] = spacing_color
+
+    if not 'subpatches' in tpat:
+        return # there are no sub-patches so we return here
 
     # Default rect, in grid cells not pixels, of the first sub-patch.
     left = 0
@@ -215,8 +227,12 @@ def tpat2tiff(tpat_in, tiff_out):
         tiff_out = (tpat['name'].replace(' ', '_') if 'name' in tpat else tpat_in) + '.tif'
 
     # Sum the cell widths and heights to get the total image size.
-    width = sum(asArray(tpat['width']))
-    height = sum(asArray(tpat['height']))
+    (hborder, vborder, _) = borders(tpat)
+    (hspacing, vspacing, _) = spacings(tpat)
+    widths = asArray(tpat['width'])
+    heights = asArray(tpat['height'])
+    width = sum(widths) + 2 * hborder + (len(widths) - 1) * hspacing
+    height = sum(heights) + 2 * vborder + (len(heights) - 1) * vspacing
 
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
