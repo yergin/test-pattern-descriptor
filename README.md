@@ -1,7 +1,7 @@
 "T-PAT": Test Pattern Descriptor Specification V2
 =================================================
 
-*Updated: 2024-11-25*
+*Updated: 2024-11-28*
 
 The purpose of T-PAT (**T**est **PAT**tern) files is to concisely describe the positioning and colors of rectangular color patches in a test pattern image. They can serve as specifications from which test pattern images can be generated. T-PAT files are JSON files with a `.tpat` extension.
 
@@ -17,8 +17,10 @@ Top-level patch fields
 | **depth** | integer | 1 | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
 | **width** | integer or array of integers | 1 | yes | The widths in pixels of each column of the image's grid.* |
 | **height** | integer or array of integers | 1 | yes | The heights in pixels of each row of the image's grid.* |
-| **border** | integer or array of 2 integers and optional color | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer.* |
-| **spacing** | integer or array of 2 integers and optional color | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer.* |
+| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer.* |
+| **bordercolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The border color. The border will be black if not specified. |
+| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer.* |
+| **spacingcolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The grid spacing color. Nothing will be draw in the spacings if not specified. |
 | **color** | color (see [Specifying colors](#specifying-colors) below) | 1 | no | The image's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background vertical gradient. |
@@ -65,8 +67,10 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 | - | - | - | - | - |
 | **width** | integer or array of integers | 1 | no | The widths in pixels of each column of the sub-patches inner grid. |
 | **height** | integer or array of integers | 1 | no | The heights in pixels of each row of the sub-patches inner grid. |
-| **border** | integer or array of 2 integers and optional color | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
-| **spacing** | integer or array of 2 integers and optional color | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
+| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
+| **bordercolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The border color. Nothing will be draw in the borders if not specified. |
+| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
+| **spacingcolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The grid spacing color. Nothing will be draw in the spacings if not specified. |
 | **color** | color (see [Specifying colors](#specifying-colors) above) | 1 | no | The sub-patch's solid background color. |
 | **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background horizontal gradient. |
 | **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background vertical gradient. |

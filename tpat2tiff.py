@@ -98,11 +98,11 @@ def borders(tpat):
         if hasattr(border, "__len__"):
             hborder = border[0]
             vborder = border[1]
-            if len(border) > 2:
-                border_color = asColor(border[2])
         else:
             hborder = border
             vborder = border
+    if 'bordercolor' in tpat:
+        border_color = asColor(tpat['bordercolor'])
     return (hborder, vborder, border_color)
 
 # Get the patch's spacing settings
@@ -115,11 +115,11 @@ def spacings(tpat):
         if hasattr(spacing, "__len__"):
             hspacing = spacing[0]
             vspacing = spacing[1]
-            if len(spacing) > 2:
-                spacing_color = asColor(spacing[2])
         else:
             hspacing = spacing
             vspacing = spacing
+    if 'spacingcolor' in tpat:
+        spacing_color = asColor(tpat['spacingcolor'])
     return (hspacing, vspacing, spacing_color)
 
 def convert_bits(image, from_bits, to_bits):
