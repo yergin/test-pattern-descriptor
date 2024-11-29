@@ -18,7 +18,7 @@
     "left": 4,
     "width": [70, 70, 70],
     "height": 360,
-    "descriptions": ["dark grey", "mid grey", "light grey"],
+    "description": ["dark grey", "mid grey", "light grey"],
     "subpatches": [0.1, 0.2, 0.3]
     },
     {

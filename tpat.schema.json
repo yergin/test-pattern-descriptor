@@ -97,10 +97,11 @@
               "right": { "type": "integer", "minimum": 0 },
               "top": { "type": "integer", "minimum": 0 },
               "bottom": { "type": "integer", "minimum": 0 },
-              "description": { "type": "string" },
-              "descriptions": {
-              "type": "array",
-              "items": { "type": "string" }
+              "description": {
+                "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" } }
+                ]
               },
               "subpatches": {
                 "type": "array",
@@ -162,10 +163,11 @@
       "hcosine": { "$ref": "#/definitions/frequencyGrating" },
       "vcosine": { "$ref": "#/definitions/frequencyGrating" },
       "image": { "type": "string" },
-      "description": { "type": "string" },
-      "descriptions": {
-        "type": "array",
-        "items": { "type": "string" }
+      "description": {
+        "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+        ]
       },
       "subpatches": {
         "type": "array",
