@@ -256,13 +256,23 @@ def drawPatch(image, tpat, bits, directory):
     composite_image(image[vborder:height - vborder, hborder:width - hborder], tpat, bits, directory)
 
 # Draw and save a TIFF file from a T-PAT file.
-def tpat2tiff(tpat_in, tiff_out, schema):
+def tpat2tiff(tpat_in, tiff_out):
     f = open(tpat_in)
     tpat = json.load(f)
     f.close()
 
-    if not schema is None:
-        validate(instance=tpat, schema=schema)
+    # Check the T-PAT file against the schema.
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    schema_file = os.path.join(script_dir, "tpat.schema.json")
+    if os.path.isfile(schema_file):
+        f = open(schema_file)
+        schema = json.load(f)
+        f.close()
+        try:
+            validate(instance=tpat, schema=schema)
+        except Exception as error:
+            print(str(error).splitlines()[0])
+            exit(1)
 
     # Check the T-PAT version number.
     if 'version' in tpat:
@@ -308,14 +318,7 @@ def main():
     if len(sys.argv) < 2:
         print(f"Usage:  python {sys.argv[0]} <TPAT_file_in> [<TIFF_file_out>]")
         exit(1)
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    schema_file = os.path.join(script_dir, "tpat.schema.json")
-    schema = None
-    if os.path.isfile(schema_file):
-        f = open(schema_file)
-        schema = json.load(f)
-        f.close()
-    tpat2tiff(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None, schema)
+    tpat2tiff(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
 
 if __name__ == "__main__":
     main()
