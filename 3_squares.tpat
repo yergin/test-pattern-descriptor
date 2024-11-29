@@ -1,29 +1,41 @@
 {
   "name": "3 squares",
   "depth": 32,
-  "width": [210, 360, 210, 360, 210, 360, 210],
-  "height": [360, 360, 360],
+  "width": [
+    210,
+    360,
+    210,
+    360,
+    210,
+    360,
+    210
+  ],
+  "height": [
+    360,
+    360,
+    360
+  ],
   "description": "A full width horizontal ramp",
-  "hramp": [0, 1],
+  "hramp": [
+    0,
+    1
+  ],
   "subpatches": [
     {
-      "left": 1, "top": 1,
-      "color": 0.5
+      "description": "25% grey square",
+      "left": 1,
+      "top": 1,
+      "color": 0.75
     },
     {
+      "description": "50% grey square",
       "left": 3,
       "color": 0.5
     },
     {
-    "left": 4,
-    "width": [70, 70, 70],
-    "height": 360,
-    "description": ["dark grey", "mid grey", "light grey"],
-    "subpatches": [0.1, 0.2, 0.3]
-    },
-    {
+      "description": "50% white square",
       "left": 5,
-      "color": 0.5
+      "color": 0.25
     }
   ]
 }
