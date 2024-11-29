@@ -3,10 +3,13 @@
   "depth": 32,
   "width": [210, 360, 210, 360, 210, 360, 210],
   "height": [360, 360, 360],
+  "description": "Full screen horizontal ramp background",
   "hramp": [0, 1],
+  "descriptions": ["50% grey", "...", "..."],
   "subpatches": [
     {
-      "left": 1, "top": 1,
+      "left": 1,
+      "top": 1,
       "color": 0.5
     },
     {
