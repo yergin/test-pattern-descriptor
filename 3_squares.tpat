@@ -5,22 +5,20 @@
   "height": [360, 360, 360],
   "description": "Full screen horizontal ramp background",
   "hramp": [0, 1],
+  "descriptions": ["50% grey", "...", "..."],
   "subpatches": [
     {
-      "description": "25% grey square",
       "left": 1,
       "top": 1,
-      "color": 0.75
+      "color": 0.5
     },
     {
-      "description": "50% grey square",
       "left": 3,
       "color": 0.5
     },
     {
-      "description": "50% white square",
       "left": 5,
-      "color": 0.25
+      "color": 0.5
     }
   ]
 }
