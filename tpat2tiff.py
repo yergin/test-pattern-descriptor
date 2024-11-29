@@ -201,20 +201,20 @@ def drawPatch(image, tpat, bits, directory):
         return # no subpatch grid has been defined
 
     # Interleave the grid widths with the border and spacings
-    x = [0, hborder] + [b for a in asArray(tpat['width']) for b in [a, hspacing]]
-    y = [0, vborder] + [b for a in asArray(tpat['height']) for b in [a, vspacing]]
-    x = np.cumsum(x) # calculate the grid of x offsets
-    y = np.cumsum(y) # calculate the grid of y offsets
+    x = [b for a in asArray(tpat['width']) for b in [a, hspacing]]
+    y = [b for a in asArray(tpat['height']) for b in [a, vspacing]]
+    x = np.cumsum([0] + x[:-1]) # calculate the grid of x offsets
+    y = np.cumsum([0] + y[:-1]) # calculate the grid of y offsets
 
     # Draw spacings if a color was specified
     if not spacing_color is None:
-        for i in range(2, len(x) - 2, 2):
-            image[vborder:height - vborder, x[i]:x[i + 1]] = spacing_color
-        for i in range(2, len(y) - 2, 2):
-            image[y[i]:y[i + 1], hborder:width - hborder] = spacing_color
+        for i in range(2, len(x), 2):
+            rect[:, x[i - 1]:x[i]] = spacing_color
+        for i in range(2, len(y), 2):
+            rect[y[i - 1]:y[i], :] = spacing_color
 
     if not 'subpatches' in tpat:
-        composite_image(image[vborder:height - vborder, hborder:width - hborder], tpat, bits, directory)
+        composite_image(rect, tpat, bits, directory)
         return # there are no sub-patches so we return here
 
     # Default rect, in grid cells not pixels, of the first sub-patch.
@@ -236,7 +236,7 @@ def drawPatch(image, tpat, bits, directory):
                 hgt = p['bottom'] - top
 
         # The patch's rect in pixels.
-        subpatch = image[y[top * 2 + 1]:y[(top + hgt) * 2], x[left * 2 + 1]:x[(left + wid) * 2]]
+        subpatch = rect[y[top * 2]:y[(top + hgt) * 2 - 1], x[left * 2]:x[(left + wid) * 2 - 1]]
 
         if isinstance(p, dict):
             drawPatch(subpatch, p, bits, directory) # the sub-patch is defined as a dict, therefore recurse
@@ -248,12 +248,12 @@ def drawPatch(image, tpat, bits, directory):
 
         # If the next patch's position surpasses the right edge of the grid, move it to the start of
         # the next row, assuming rows are 'hgt' cells high.
-        if left + wid >= len(x) / 2:
+        if left + wid > len(x) / 2:
             left = 0
             top += hgt
 
     # Composite images on top of subpatches.
-    composite_image(image[vborder:height - vborder, hborder:width - hborder], tpat, bits, directory)
+    composite_image(rect, tpat, bits, directory)
 
 # Draw and save a TIFF file from a T-PAT file.
 def tpat2tiff(tpat_in, tiff_out):
