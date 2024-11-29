@@ -13,7 +13,8 @@ Top-level patch fields
 | Field | Type | Version | Required | Description |
 | - | - | - | - | - |
 | **version** | integer | 1 | no | The T-PAT version number (defaults to 1 if omitted) |
-| **name** | string | 1 | no | A name describing the test pattern |
+| **name** | string | 1 | no | A name describing the test pattern. |
+| **description** | string | 2 | no | A full description of the test pattern.** |
 | **depth** | integer | 1 | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
 | **width** | integer or array of integers | 1 | yes | The widths in pixels of each column of the image's grid.* |
 | **height** | integer or array of integers | 1 | yes | The heights in pixels of each row of the image's grid.* |
@@ -30,8 +31,11 @@ Top-level patch fields
 | **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical sinusoidal frequency grating. |
 | **image** | string | 2 | no | A TIFF file to be composited onto the image after subpatches have been drawn. If the file has an alpha channel, alpha premultiplication will be assumed. The path may be specified relative to T-PAT file. |
 | **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | 1 | no | The image's top-level sub-patches |
+| **descriptions** | array of string | 2 | no | A description of the sub-patches. This must be the same length as the sub-patch array and "..." means "refer to another description for the patch with the same color value."** |
 
-(*)If width or height are defined as arrays, their sum will determine the total width and height of the image, respectively. The image size will also include any borders and spacings specified.
+(*) If width or height are defined as arrays, their sum will determine the total width and height of the image, respectively. The image size will also include any borders and spacings specified.
+
+(**) These fields may be used to automatically generates a PDF specification for the test pattern.
 
 Only one of **color**, **hramp** or **vramp** may be defined. If no background is specified, the image's background color will be black.
 
@@ -79,11 +83,15 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 | **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background horizontal sinusoidal frequency grating. |
 | **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical sinusoidal frequency grating. |
 | **image** | string | 2 | no | A TIFF file to be composited onto the subpatch after child subpatches have been drawn. If the file has an alpha channel, alpha premultiplication will be assumed. The path may be specified relative to T-PAT file. |
+| **description** | string | 2 | no | A description of the current sub-patch. This overrides the parents corresponding "descriptions" entry for this sub-patch.* |
 | **left** | integer | 1 | no | The sub-patch's left position in its containing patch's grid starting at 0. |
 | **right** | integer | 1 | no | The sub-patch's right position in its containing patch's grid starting at 0. |
 | **top** | integer | 1 | no | The sub-patch's top position in its containing patch's grid starting at 0. |
 | **bottom** | integer | 1 | no | The sub-patch's bottom position in its containing patch's grid starting at 0. |
 | **subpatches** | array of sub-patches | 1 | no | The sub-patch's own sub-patches |
+| **descriptions** | array of string | 2 | no | A description of the sub-patches. This must be the same length as the sub-patch array and "..." means "refer to another description for the patch with the same color value."* |
+
+(*) These fields may be used to automatically generates a PDF specification for the test pattern.
 
 **left**, **top**, **right** and **bottom** are always expressed in cells of the containing patch. Specifying **left** or **top** overrides the sub-patch's default left or top positioning, respectively, which is always the next position along in the containing patch's grid, from left to right then from top to bottom. **right** and **bottom** override the sub-patch's default width and height which is otherwise inherited from the previous sub-patch. The width and height also determine the X and Y increment for the sub-patch's default location.
 
@@ -100,10 +108,13 @@ Below are the contents of the file `3_squares.tpat` included in this repository.
   "depth": 32,
   "width": [210, 360, 210, 360, 210, 360, 210],
   "height": [360, 360, 360],
+  "description": "Full screen horizontal ramp background",
   "hramp": [0, 1],
+  "descriptions": ["50% grey", "...", "..."],
   "subpatches": [
     {
-      "left": 1, "top": 1,
+      "left": 1,
+      "top": 1,
       "color": 0.5
     },
     {

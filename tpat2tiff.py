@@ -196,13 +196,16 @@ def drawPatch(image, tpat, bits, directory):
     elif 'vsquare' in tpat:
         verticalGrating(rect[:], square, tpat['vsquare'][0], tpat['vsquare'][1], tpat['vsquare'][2], is_float)
 
-    if not 'width' in tpat or not 'height' in tpat:
+    if not 'width' in tpat and not 'height' in tpat:
         composite_image(rect, tpat, bits, directory)
         return # no subpatch grid has been defined
 
+    widths = asArray(tpat['width']) if 'width' in tpat else [width - 2 * hborder]
+    heights = asArray(tpat['height']) if 'height' in tpat else [height - 2 * vborder]
+
     # Interleave the grid widths with the border and spacings
-    x = [b for a in asArray(tpat['width']) for b in [a, hspacing]]
-    y = [b for a in asArray(tpat['height']) for b in [a, vspacing]]
+    x = [b for a in widths for b in [a, hspacing]]
+    y = [b for a in heights for b in [a, vspacing]]
     x = np.cumsum([0] + x[:-1]) # calculate the grid of x offsets
     y = np.cumsum([0] + y[:-1]) # calculate the grid of y offsets
 
