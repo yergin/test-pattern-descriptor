@@ -97,6 +97,12 @@
               "right": { "type": "integer", "minimum": 0 },
               "top": { "type": "integer", "minimum": 0 },
               "bottom": { "type": "integer", "minimum": 0 },
+              "description": {
+                "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" } }
+                ]
+              },
               "subpatches": {
                 "type": "array",
                 "items": { "$ref": "#/definitions/subpatch" }
@@ -157,6 +163,12 @@
       "hcosine": { "$ref": "#/definitions/frequencyGrating" },
       "vcosine": { "$ref": "#/definitions/frequencyGrating" },
       "image": { "type": "string" },
+      "description": {
+        "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+        ]
+      },
       "subpatches": {
         "type": "array",
         "items": { "$ref": "#/definitions/subpatch" }
