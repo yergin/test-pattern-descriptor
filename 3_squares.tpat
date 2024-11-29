@@ -3,6 +3,7 @@
   "depth": 32,
   "width": [210, 360, 210, 360, 210, 360, 210],
   "height": [360, 360, 360],
+  "description": "A full width horizontal ramp",
   "hramp": [0, 1],
   "subpatches": [
     {
@@ -12,6 +13,13 @@
     {
       "left": 3,
       "color": 0.5
+    },
+    {
+    "left": 4,
+    "width": [70, 70, 70],
+    "height": 360,
+    "descriptions": ["dark grey", "mid grey", "light grey"],
+    "subpatches": [0.1, 0.2, 0.3]
     },
     {
       "left": 5,
