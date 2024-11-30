@@ -15,6 +15,7 @@ import math
 import numpy as np
 import os
 import pathlib
+from PIL import Image
 import sys
 import tifffile as tiff
 
@@ -161,7 +162,7 @@ def composite_image(image, tpat, bits, directory):
     rect[:] = convert_bits(dest * (1 - a) + rgb, 32, bits)
 
 # A recursive function for drawing patches.
-def drawPatch(image, tpat, bits, directory):
+def drawPatch(image, tpat, parent_widths, parent_heights, bits, directory):
     is_float = bits == 32
     [height, width] = image.shape[:2]
     (hborder, vborder, border_color) = borders(tpat)
@@ -200,8 +201,12 @@ def drawPatch(image, tpat, bits, directory):
         composite_image(rect, tpat, bits, directory)
         return # no subpatch grid has been defined
 
-    widths = asArray(tpat['width']) if 'width' in tpat else [width - 2 * hborder]
-    heights = asArray(tpat['height']) if 'height' in tpat else [height - 2 * vborder]
+    widths = [width - 2 * hborder]
+    heights = [height - 2 * vborder]
+    if 'width' in tpat:
+        widths = parent_widths if tpat['width'] == 'parent' else asArray(tpat['width'])
+    if 'height' in tpat:
+        heights = parent_heights if tpat['height'] == 'parent' else asArray(tpat['height'])
 
     # Interleave the grid widths with the border and spacings
     x = [b for a in widths for b in [a, hspacing]]
@@ -242,7 +247,8 @@ def drawPatch(image, tpat, bits, directory):
         subpatch = rect[y[top * 2]:y[(top + hgt) * 2 - 1], x[left * 2]:x[(left + wid) * 2 - 1]]
 
         if isinstance(p, dict):
-            drawPatch(subpatch, p, bits, directory) # the sub-patch is defined as a dict, therefore recurse
+            # The sub-patch is defined as a dict, therefore recurse
+            drawPatch(subpatch, p, widths[left:left + wid], heights[top:top + hgt], bits, directory)
         else:
             subpatch[:] = asColor(p) # the sub-patch is defined as a color value
 
@@ -257,6 +263,33 @@ def drawPatch(image, tpat, bits, directory):
 
     # Composite images on top of subpatches.
     composite_image(rect, tpat, bits, directory)
+
+
+def save_tiff(image, file_name, bits):
+    if bits == 8:
+        bit_depth = "uint8"
+        scaleUp = 1
+        scaleDown = 0
+    elif bits <= 16:
+        bit_depth = "uint16"
+        scaleUp = 2**(16 - bits) # shift right to fill MSBs
+        scaleDown = 2**(2 * bits - 16) # fill LSBs with MSBs for full 16-bit scaling
+    elif bits == 32:
+        bit_depth = "float32"
+        scaleUp = 1
+        scaleDown = 0
+    image = (image * scaleUp) + (image / scaleDown if scaleDown > 0 else 0)
+
+    tiff.imwrite(file_name, image.astype(bit_depth))
+
+
+def save_8bit(image, file_name, bits):
+    if bits == 32:
+        image = np.round(image * 255 + 0.5).astype(np.uint8)
+    elif bits > 8:
+        image = (image * 255 / (2**bits - 1)).astype(np.uint8)
+    Image.fromarray(image).save(file_name)
+
 
 # Draw and save a TIFF file from a T-PAT file.
 def tpat2tiff(tpat_in, tiff_out):
@@ -283,10 +316,12 @@ def tpat2tiff(tpat_in, tiff_out):
             print(f"This tool supports version 1 and 2 T-PAT files only")
             exit(1)
 
+    base_file_name = tpat['name'].replace(' ', '_') if 'name' in tpat else tpat_in[:-5]
+
     # If the TIFF's file name is not defined, use the T-PAT's 'name' field, otherwise use the name
     # of the T-PAT file itself.
     if tiff_out is None:
-        tiff_out = (tpat['name'].replace(' ', '_') if 'name' in tpat else tpat_in) + '.tif'
+        tiff_out = base_file_name + '.tif'
 
     # Sum the cell widths and heights to get the total image size.
     (hborder, vborder, _) = borders(tpat)
@@ -299,29 +334,18 @@ def tpat2tiff(tpat_in, tiff_out):
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
     image = np.zeros((height, width, 3), np.int32 if bits <= 16 else np.float32)
-    drawPatch(image, tpat, bits, pathlib.Path(tpat_in).parent.resolve())
+    drawPatch(image, tpat, None, None, bits, pathlib.Path(tpat_in).parent.resolve())
 
-    if bits == 8:
-        bit_depth = "uint8"
-        scaleUp = 1
-        scaleDown = 0
-    elif bits <= 16:
-        bit_depth = "uint16"
-        scaleUp = 2**(16 - bits) # shift right to fill MSBs
-        scaleDown = 2**(2 * bits - 16) # fill LSBs with MSBs for full 16-bit scaling
-    elif bits == 32:
-        bit_depth = "float32"
-        scaleUp = 1
-        scaleDown = 0
-    image = (image * scaleUp) + (image / scaleDown if scaleDown > 0 else 0)
+    save_tiff(image, tiff_out, bits)
+    save_8bit(image, base_file_name + '.png', bits)
 
-    tiff.imwrite(tiff_out, image.astype(bit_depth))
 
 def main():
     if len(sys.argv) < 2:
         print(f"Usage:  python {sys.argv[0]} <TPAT_file_in> [<TIFF_file_out>]")
         exit(1)
     tpat2tiff(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+
 
 if __name__ == "__main__":
     main()

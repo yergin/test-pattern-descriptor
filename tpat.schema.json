@@ -66,6 +66,10 @@
             "width": {
               "oneOf": [
                 {
+                  "type": "string",
+                  "enum": ["parent"]
+                },
+                {
                   "type": "integer",
                   "minimum": 1
                 },
@@ -80,6 +84,10 @@
             },
             "height": {
               "oneOf": [
+                {
+                  "type": "string",
+                  "enum": ["parent"]
+                },
                 {
                   "type": "integer",
                   "minimum": 1
