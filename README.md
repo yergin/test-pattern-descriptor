@@ -69,8 +69,8 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 
 | Field | Type | Version | Required | Description |
 | - | - | - | - | - |
-| **width** | integer, array of integers or "parent" | 1 | no | The widths in pixels of each column of the sub-patches inner grid. If set to "parent", the parent's horizontal grid will be used. |
-| **height** | integer, array of integers or "parent" | 1 | no | The heights in pixels of each row of the sub-patches inner grid. If set to "parent", the parent's vertical grid will be used. |
+| **width** | integer, array of integers or "parent" | 1 | no | The widths in pixels of each column of the sub-patches inner grid. If set to "parent", the parent's horizontal grid and spacing will be used. |
+| **height** | integer, array of integers or "parent" | 1 | no | The heights in pixels of each row of the sub-patches inner grid. If set to "parent", the parent's vertical grid and spacing will be used. |
 | **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
 | **bordercolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The border color. Nothing will be draw in the borders if not specified. |
 | **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |

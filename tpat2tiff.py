@@ -108,9 +108,9 @@ def borders(tpat):
     return (hborder, vborder, border_color)
 
 # Get the patch's spacing settings
-def spacings(tpat):
-    hspacing = 0
-    vspacing = 0
+def spacings(tpat, default_hspacing, default_vspacing):
+    hspacing = 0 if default_hspacing is None else default_hspacing
+    vspacing = 0 if default_vspacing is None else default_vspacing
     spacing_color = None
     if 'spacing' in tpat:
         spacing = tpat['spacing']
@@ -162,11 +162,10 @@ def composite_image(image, tpat, bits, directory):
     rect[:] = convert_bits(dest * (1 - a) + rgb, 32, bits)
 
 # A recursive function for drawing patches.
-def drawPatch(image, tpat, parent_widths, parent_heights, bits, directory):
+def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, parent_vspacing, bits, directory):
     is_float = bits == 32
     [height, width] = image.shape[:2]
     (hborder, vborder, border_color) = borders(tpat)
-    (hspacing, vspacing, spacing_color) = spacings(tpat)
 
     # Draw borders if a color was specified
     if not border_color is None:
@@ -203,10 +202,21 @@ def drawPatch(image, tpat, parent_widths, parent_heights, bits, directory):
 
     widths = [width - 2 * hborder]
     heights = [height - 2 * vborder]
+    default_hspacing = None
+    default_vspacing = None
     if 'width' in tpat:
-        widths = parent_widths if tpat['width'] == 'parent' else asArray(tpat['width'])
+        if tpat['width'] == 'parent':
+            widths = parent_widths
+            default_hspacing = parent_hspacing
+        else:
+            widths = asArray(tpat['width'])
     if 'height' in tpat:
-        heights = parent_heights if tpat['height'] == 'parent' else asArray(tpat['height'])
+        if tpat['height'] == 'parent':
+            heights = parent_heights
+            default_vspacing = parent_vspacing
+        else:
+            heights = asArray(tpat['height'])
+    (hspacing, vspacing, spacing_color) = spacings(tpat, default_hspacing, default_vspacing)
 
     # Interleave the grid widths with the border and spacings
     x = [b for a in widths for b in [a, hspacing]]
@@ -248,7 +258,7 @@ def drawPatch(image, tpat, parent_widths, parent_heights, bits, directory):
 
         if isinstance(p, dict):
             # The sub-patch is defined as a dict, therefore recurse
-            drawPatch(subpatch, p, widths[left:left + wid], heights[top:top + hgt], bits, directory)
+            drawPatch(subpatch, p, widths[left:left + wid], heights[top:top + hgt], hspacing, vspacing, bits, directory)
         else:
             subpatch[:] = asColor(p) # the sub-patch is defined as a color value
 
@@ -325,7 +335,7 @@ def tpat2tiff(tpat_in, tiff_out):
 
     # Sum the cell widths and heights to get the total image size.
     (hborder, vborder, _) = borders(tpat)
-    (hspacing, vspacing, _) = spacings(tpat)
+    (hspacing, vspacing, _) = spacings(tpat, None, None)
     widths = asArray(tpat['width'])
     heights = asArray(tpat['height'])
     width = sum(widths) + 2 * hborder + (len(widths) - 1) * hspacing
@@ -334,7 +344,7 @@ def tpat2tiff(tpat_in, tiff_out):
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
     image = np.zeros((height, width, 3), np.int32 if bits <= 16 else np.float32)
-    drawPatch(image, tpat, None, None, bits, pathlib.Path(tpat_in).parent.resolve())
+    drawPatch(image, tpat, None, None, None, None, bits, pathlib.Path(tpat_in).parent.resolve())
 
     save_tiff(image, tiff_out, bits)
     save_8bit(image, base_file_name + '.png', bits)
