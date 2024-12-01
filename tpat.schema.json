@@ -171,6 +171,18 @@
             "image": {
               "type": "string"
             },
+            "premul": {
+              "type": "boolean"
+            },
+            "span": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "minItems": 4,
+              "maxItems": 4
+            },
             "left": {
               "type": "integer",
               "minimum": 0
@@ -319,6 +331,9 @@
     },
     "image": {
       "type": "string"
+    },
+    "premul": {
+      "type": "boolean"
     },
     "description": { "type": "string" },
     "descriptions": { "type": "array", "items": { "type": "string" }},

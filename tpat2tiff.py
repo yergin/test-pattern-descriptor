@@ -137,8 +137,10 @@ def composite_image(image, tpat, bits, directory):
     if not 'image' in tpat:
         return
     path = tpat['image']
+    premul = tpat['premul'] if 'premul' in tpat else False
     path = path if os.path.isabs(path) else os.path.join(directory, path)
-    comp = tiff.imread(path)
+    with Image.open(path) as im:
+        comp = np.array(im, dtype=np.uint8)
     [comp_hgt, comp_wid, comp_ch] = comp.shape
     if comp.dtype == np.float32 or comp.dtype == np.float64:
         from_bits = 32
@@ -159,7 +161,8 @@ def composite_image(image, tpat, bits, directory):
 
     r, g, b, a = np.dsplit(comp, 4)
     rgb = np.dstack((r, g, b))
-    rect[:] = convert_bits(dest * (1 - a) + rgb, 32, bits)
+    rgb = dest * (1 - a) + (rgb if premul else a * rgb)
+    rect[:] = convert_bits(rgb, 32, bits)
 
 # A recursive function for drawing patches.
 def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, parent_vspacing, bits, directory):
@@ -252,6 +255,12 @@ def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, paren
                 wid = p['right'] - left
             if 'bottom' in p:
                 hgt = p['bottom'] - top
+            if 'span' in p:
+                span = p['span']
+                left = span[0]
+                top = span[1]
+                wid = span[2] - left
+                hgt = span[3] - top
 
         # The patch's rect in pixels.
         subpatch = rect[y[top * 2]:y[(top + hgt) * 2 - 1], x[left * 2]:x[(left + wid) * 2 - 1]]

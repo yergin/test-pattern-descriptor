@@ -29,7 +29,8 @@ Top-level patch fields
 | **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical square frequency grating. |
 | **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background horizontal sinusoidal frequency grating. |
 | **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical sinusoidal frequency grating. |
-| **image** | string | 2 | no | A TIFF file to be composited onto the image after subpatches have been drawn. If the file has an alpha channel, alpha premultiplication will be assumed. The path may be specified relative to T-PAT file. |
+| **image** | string | 2 | no | A TIFF file to be composited onto the image after subpatches have been drawn. The path may be specified relative to T-PAT file. |
+| **premul** | boolean | 2 | no | Whether the composited image is premultiplied by its alpha channel. |
 | **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | 1 | no | The image's top-level sub-patches |
 | **descriptions** | array of string | 2 | no | A description of the sub-patches. This must be the same length as the sub-patch array and "..." means "refer to another description for the patch with the same color value."** |
 
@@ -82,8 +83,10 @@ Each sub-patch may be defined as a simple color value (see [Specifying colors](#
 | **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical square frequency grating. |
 | **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background horizontal sinusoidal frequency grating. |
 | **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical sinusoidal frequency grating. |
-| **image** | string | 2 | no | A TIFF file to be composited onto the subpatch after child subpatches have been drawn. If the file has an alpha channel, alpha premultiplication will be assumed. The path may be specified relative to T-PAT file. |
+| **image** | string | 2 | no | An 8-bit TIFF or PNG file to be composited onto the subpatch after child subpatches have been drawn. The path may be specified relative to T-PAT file. |
+| **premul** | boolean | 2 | no | Whether the composited image is premultiplied by its alpha channel. |
 | **description** | string | 2 | no | A description of the current sub-patch. This overrides the parents corresponding "descriptions" entry for this sub-patch.* |
+| **span** | array of 4 integers | 2 | no | The sub-patch's left, top, right and bottom positions in its containing patch's grid starting at 0. |
 | **left** | integer | 1 | no | The sub-patch's left position in its containing patch's grid starting at 0. |
 | **right** | integer | 1 | no | The sub-patch's right position in its containing patch's grid starting at 0. |
 | **top** | integer | 1 | no | The sub-patch's top position in its containing patch's grid starting at 0. |
