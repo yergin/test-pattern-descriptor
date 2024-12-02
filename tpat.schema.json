@@ -164,9 +164,6 @@
             "spacing": {
               "$ref": "#/definitions/spacing"
             },
-            "spacingcolor": {
-              "$ref": "#/definitions/color"
-            },
             "color": {
               "$ref": "#/definitions/color"
             },
@@ -278,9 +275,6 @@
     },
     "spacing": {
       "$ref": "#/definitions/spacing"
-    },
-    "spacingcolor": {
-      "$ref": "#/definitions/color"
     },
     "color": {
       "$ref": "#/definitions/color"
