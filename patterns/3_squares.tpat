@@ -8,7 +8,7 @@
   "columns": [210, 360, 210, 360, 210, 360, 210],
   "description": "Full screen horizontal ramp background",
   "hramp": [0, 1],
-  "descriptions": ["50% grey", "...", "..."],
+  "descriptions": ["50% grey", ".", "."],
   "patches": [
     {
       "cell": [2, 2],
