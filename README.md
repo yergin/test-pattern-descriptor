@@ -16,7 +16,6 @@ General top-level fields
 | - | - | - | - |
 | **version** | integer | no | The T-PAT version number (defaults to 1 if omitted). |
 | **name** | string | no | A name describing the test pattern. |
-| **description**<sup>2<sup/> | string | no | A full description of the test pattern. |
 | **depth** | integer | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
 | **columns**<sup>2</sup><br>**width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid. |
 | **rows**<sup>2</sup><br>**height** | integer or array of integers | yes | The heights in pixels of each row of the image's grid. |
