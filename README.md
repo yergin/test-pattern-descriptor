@@ -90,7 +90,7 @@ Drawing and patch-related fields
 | **image**<sup>2</sup> | string | no | A TIFF file to be composited onto the patch after sub-patches have been drawn. The path may be specified relative to T-PAT file. |
 | **premul**<sup>2</sup> | boolean | no | Whether the composited image is premultiplied by its alpha channel. |
 | **description**<sup>2</sup> | string | no | A description of the current patch. This overrides the containing patch's corresponding "descriptions" entry for this patch.* |
-| **descriptions**<sup>2</sup> | array of string | no | A description of the sub-patches. This must be the same length as the sub-patch array and "..." means "refer to another description for the patch with the same color value."* |
+| **descriptions**<sup>2</sup> | array of string | no | A description of the sub-patches. This must be the same length as the sub-patch array. `"."` has a special meaning and means "refer to another description for the patch with the same color value" and `"..."` means "described further down in the patch hierarchy".* |
 | **patches**<sup>2</sup><br>**subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | no | The patch's sub-patches. `subpatches` is deprecated in version 2 in favour of `patches`. |
 
 (*) Although description do not affect how test patterns are rendered, they may be used by future tools to automatically generate PDF or HTML specifications for the test pattern.
