@@ -293,7 +293,7 @@ def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, paren
 
         # If the next patch's position surpasses the right edge of the grid, move it to the start of
         # the next row, assuming rows are 'hgt' cells high.
-        if left + wid > len(x) / 2:
+        if left + wid > len(widths):
             left = 0
             top += hgt
 
