@@ -134,6 +134,7 @@ Below are the contents of the file `3_squares.tpat` included in this repository.
 
 ```
 {
+  "version": 2,
   "name": "3 squares",
   "depth": 32,
   "width": 1920,

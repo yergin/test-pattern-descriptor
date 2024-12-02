@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "name": "EBU R 103 TC 1",
+  "depth": 10,
+  "width": 1920,
+  "height": 1080,
+  "rows": [138, 73, 73, 73, 73, 73, 73, 73, 73, 73, 73, 73, 139],
+  "columns": [180, 200, 140, 200, 140, 200, 140, 200, 140, 200, 180],
+  "description": "SDI full range horizontal ramp: -6.84% to 109% IRE",
+  "hramp": [4, 1019],
+  "patches": [
+    {
+      "cell": [2, 2, 12, 2],
+      "rows": "parent",
+      "description": "EBU preferred upper headroom: 100% to 105% IRE",
+      "patches": [984, 980, 975, 971, 966, 962, 958, 953, 949, 944, 940]
+    },
+    {
+      "cell": [2, 4, 12, 4],
+      "rows": "parent",
+      "description": "Super-white Data: 100% to 109% IRE",
+      "patches": [1019, 1011, 1003, 995, 987, 980, 972, 964, 956, 948, 940]
+    },
+    {
+      "cell": [2, 6, 12, 6],
+      "rows": "parent",
+      "description": "Nominal video range: 0% to 100% IRE",
+      "patches": [940, 852, 765, 677, 590, 502, 414, 327, 239, 152, 64]
+    },
+    {
+      "cell": [2, 8, 12, 8],
+      "rows": "parent",
+      "description": "Sub-black data: -6.84% to 0% IRE",
+      "patches": [64, 58, 52, 46, 40, 34, 28, 22, 16, 10, 4]
+    },
+    {
+      "cell": [2, 10, 12, 10],
+      "rows": "parent",
+      "description": "EBU preferred lower headroom: -5% to 0% IRE",
+      "patches": [64, 60, 55, 51, 46, 42, 38, 33, 29, 24, 20]
+    }
+  ]
+}
