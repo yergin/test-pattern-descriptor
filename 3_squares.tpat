@@ -1,23 +1,24 @@
 {
   "name": "3 squares",
   "depth": 32,
-  "width": [210, 360, 210, 360, 210, 360, 210],
-  "height": [360, 360, 360],
+  "width": 1920,
+  "height": 1080,
+  "rows": [360, 360, 360],
+  "columns": [210, 360, 210, 360, 210, 360, 210],
   "description": "Full screen horizontal ramp background",
   "hramp": [0, 1],
   "descriptions": ["50% grey", "...", "..."],
-  "subpatches": [
+  "patches": [
     {
-      "left": 1,
-      "top": 1,
+      "cell": [2, 2],
       "color": 0.5
     },
     {
-      "left": 3,
+      "cell": [2, 4],
       "color": 0.5
     },
     {
-      "left": 5,
+      "cell": [2, 6],
       "color": 0.5
     }
   ]

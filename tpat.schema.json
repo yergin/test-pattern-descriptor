@@ -4,6 +4,71 @@
   "description": "Schema for Test Pattern Descriptor Specification",
   "type": "object",
   "definitions": {
+    "dimension": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "subpatchDimension": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/dimension"
+        },
+        {
+          "type": "string",
+          "enum": ["parent"]
+        }
+      ]
+    },
+    "spacing": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "cell": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
     "color": {
       "oneOf": [
         {
@@ -27,35 +92,50 @@
       "minItems": 2,
       "maxItems": 2
     },
+    "frequency": {
+      "type": "number",
+      "minimum": 1
+    },
     "frequencyGrating": {
-      "type": "array",
-      "items": [
+      "oneOf": [
         {
-          "oneOf": [
+          "type": "array",
+          "items": [
             {
-              "type": "number"
+              "$ref": "#/definitions/frequency"
             },
             {
-              "type": "array",
-              "items": {
-                "type": "number"
-              },
-              "minItems": 2,
-              "maxItems": 2
+              "$ref": "#/definitions/color"
+            },
+            {
+              "$ref": "#/definitions/color"
             }
-          ]
+          ],
+          "minItems": 3,
+          "maxItems": 3
         },
         {
-          "$ref": "#/definitions/color"
-        },
-        {
-          "$ref": "#/definitions/color"
+          "type": "array",
+          "items": [
+            {
+              "$ref": "#/definitions/frequency"
+            },
+            {
+              "$ref": "#/definitions/frequency"
+            },
+            {
+              "$ref": "#/definitions/color"
+            },
+            {
+              "$ref": "#/definitions/color"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
         }
-      ],
-      "minItems": 3,
-      "maxItems": 3
+      ]
     },
-    "subpatch": {
+    "patch": {
       "oneOf": [
         {
           "$ref": "#/definitions/color"
@@ -64,79 +144,25 @@
           "type": "object",
           "properties": {
             "width": {
-              "oneOf": [
-                {
-                  "type": "string",
-                  "enum": ["parent"]
-                },
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "integer",
-                    "minimum": 1
-                  }
-                }
-              ]
+              "$ref": "#/definitions/subpatchDimension"
             },
             "height": {
-              "oneOf": [
-                {
-                  "type": "string",
-                  "enum": ["parent"]
-                },
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "integer",
-                    "minimum": 1
-                  }
-                }
-              ]
+              "$ref": "#/definitions/subpatchDimension"
+            },
+            "rows": {
+              "$ref": "#/definitions/subpatchDimension"
+            },
+            "columns": {
+              "$ref": "#/definitions/subpatchDimension"
             },
             "border": {
-              "oneOf": [
-                {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "minItems": 2,
-                  "maxItems": 2
-                }
-              ]
+              "$ref": "#/definitions/spacing"
             },
             "bordercolor": {
               "$ref": "#/definitions/color"
             },
             "spacing": {
-              "oneOf": [
-                {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "minItems": 2,
-                  "maxItems": 2
-                }
-              ]
+              "$ref": "#/definitions/spacing"
             },
             "spacingcolor": {
               "$ref": "#/definitions/color"
@@ -174,14 +200,8 @@
             "premul": {
               "type": "boolean"
             },
-            "span": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "minItems": 4,
-              "maxItems": 4
+            "cell": {
+              "$ref": "#/definitions/cell"
             },
             "left": {
               "type": "integer",
@@ -201,10 +221,16 @@
             },
             "description": { "type": "string" },
             "descriptions": { "type": "array", "items": { "type": "string" }},
+            "patches": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/patch"
+              }
+            },
             "subpatches": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/subpatch"
+                "$ref": "#/definitions/patch"
               }
             }
           },
@@ -233,71 +259,25 @@
       ]
     },
     "width": {
-      "oneOf": [
-        {
-          "type": "integer",
-          "minimum": 1
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 1
-          }
-        }
-      ]
+      "$ref": "#/definitions/subpatchDimension"
     },
     "height": {
-      "oneOf": [
-        {
-          "type": "integer",
-          "minimum": 1
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 1
-          }
-        }
-      ]
+      "$ref": "#/definitions/subpatchDimension"
+    },
+    "rows": {
+      "$ref": "#/definitions/subpatchDimension"
+    },
+    "columns": {
+      "$ref": "#/definitions/subpatchDimension"
     },
     "border": {
-      "oneOf": [
-        {
-          "type": "integer",
-          "minimum": 0
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "minItems": 2,
-          "maxItems": 2
-        }
-      ]
+      "$ref": "#/definitions/spacing"
     },
     "bordercolor": {
       "$ref": "#/definitions/color"
     },
     "spacing": {
-      "oneOf": [
-        {
-          "type": "integer",
-          "minimum": 0
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "minItems": 2,
-          "maxItems": 2
-        }
-      ]
+      "$ref": "#/definitions/spacing"
     },
     "spacingcolor": {
       "$ref": "#/definitions/color"
@@ -337,17 +317,34 @@
     },
     "description": { "type": "string" },
     "descriptions": { "type": "array", "items": { "type": "string" }},
+    "patches": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/patch"
+      }
+    },
     "subpatches": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/subpatch"
+        "$ref": "#/definitions/patch"
       }
     }
   },
-  "required": [
-    "depth",
-    "width",
-    "height"
+  "anyOf": [
+    {
+      "required": [
+        "depth",
+        "width",
+        "height"
+      ]
+    },
+    {
+      "required": [
+        "depth",
+        "rows",
+        "columns"
+      ]
+    }
   ],
   "additionalProperties": false
 }

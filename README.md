@@ -1,44 +1,102 @@
 "T-PAT": Test Pattern Descriptor Specification V2
 =================================================
 
-*Updated: 2024-11-28*
+*Updated: 2024-12-01*
 
 The purpose of T-PAT (**T**est **PAT**tern) files is to concisely describe the positioning and colors of rectangular color patches in a test pattern image. They can serve as specifications from which test pattern images can be generated. T-PAT files are JSON files with a `.tpat` extension.
 
 Each T-PAT file represents a test pattern image of a specified size and bit-depth. It contains hierarchical data describing the layout and color of each color patch within its 'container' patch. At the top of the hierarchy is the top-level patch representing the entire image. Patches can be split into a grid of "cells" which serve to locate "sub-patches".
 
-Top-level patch fields
-----------------------
+The `version` field must be included to enable certain features like specifying borders, spacings, image overlays and descriptions. In the following tables, the superscript next to the field indicates the version in which support for the field was added. The fields with no superscripts were introduced in version 1.
 
-| Field | Type | Version | Required | Description |
-| - | - | - | - | - |
-| **version** | integer | 1 | no | The T-PAT version number (defaults to 1 if omitted) |
-| **name** | string | 1 | no | A name describing the test pattern. |
-| **description** | string | 2 | no | A full description of the test pattern.** |
-| **depth** | integer | 1 | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
-| **width** | integer or array of integers | 1 | yes | The widths in pixels of each column of the image's grid.* |
-| **height** | integer or array of integers | 1 | yes | The heights in pixels of each row of the image's grid.* |
-| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer.* |
-| **bordercolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The border color. The border will be black if not specified. |
-| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer.* |
-| **spacingcolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The grid spacing color. Nothing will be draw in the spacings if not specified. |
-| **color** | color (see [Specifying colors](#specifying-colors) below) | 1 | no | The image's solid background color. |
-| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background horizontal gradient. |
-| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | 1 | no | The image's background vertical gradient. |
-| **hsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background horizontal square frequency grating. |
-| **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical square frequency grating. |
-| **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background horizontal sinusoidal frequency grating. |
-| **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | 2 | no | The image's background vertical sinusoidal frequency grating. |
-| **image** | string | 2 | no | A TIFF file to be composited onto the image after subpatches have been drawn. The path may be specified relative to T-PAT file. |
-| **premul** | boolean | 2 | no | Whether the composited image is premultiplied by its alpha channel. |
-| **subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | 1 | no | The image's top-level sub-patches |
-| **descriptions** | array of string | 2 | no | A description of the sub-patches. This must be the same length as the sub-patch array and "..." means "refer to another description for the patch with the same color value."** |
+General top-level fields
+------------------------
 
-(*) If width or height are defined as arrays, their sum will determine the total width and height of the image, respectively. The image size will also include any borders and spacings specified.
+| Field | Type | Required | Description |
+| - | - | - | - |
+| **version** | integer | no | The T-PAT version number (defaults to 1 if omitted). |
+| **name** | string | no | A name describing the test pattern. |
+| **description**<sup>2<sup/> | string | no | A full description of the test pattern. |
+| **depth** | integer | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
+| **columns**<sup>2</sup><br>**width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid. |
+| **rows**<sup>2</sup><br>**height** | integer or array of integers | yes | The heights in pixels of each row of the image's grid. |
+| **border**<sup>2</sup> | integer or array of 2 integers | no | The vertical and horizontal border sizes, respectively, in pixels. The same value is used for both if specified as a single integer. |
+| **spacing**<sup>2</sup> | integer or array of 2 integers | no | The spacing between grid rows and columns, respectively, in pixels. The same value is used for both if specified as a single integer. |
 
-(**) These fields may be used to automatically generates a PDF specification for the test pattern.
+(2) Introduced in version 2.
 
-Only one of **color**, **hramp** or **vramp** may be defined. If no background is specified, the image's background color will be black.
+Image size
+----------
+
+The image size is determined by the fields `width` or `columns`, `height` or `rows`, `border` and `spacing`. If `width` or `columns` is defined as a single integer, the image width will be equal to `width + 2 * border` to account for the borders at either side. If `width` or `columns` is an array describing the column widths in the top-level grid, the image width will be equal to the borders plus the sum of the individual column widths plus the spacings between each column. The same applies to `height` when determining the final image height.
+
+If both `width` and `columns` are specified, `width` must be a single integer and equal to the image's width which has been calculated from `columns`, `border` and `spacing` as described above. Similarly, if both `height` and `rows` are specified, `height` must be a single integer and equal to the image's height which has been calculated from `rows`, `border` and `spacing`.
+
+Grids
+-----
+
+Rather than specifying the positions and sizes of each color patch individually, a T-PAT file will define a grid in terms of row heights and column widths. Color patches are then listed from left to right, top to bottom, filling each cell in the grid. The `cell` field of a patch will cause the position of the patch to skip to a particular row and column in the grid, and can also describe a patch as spanning more than one row or column. Cells are counted starting at row 1, column 1.
+
+Patches may themselves contain a grid and sub-patches. This makes it possible to divide the test pattern up into rectangular areas and define patches within a given area consecutively.
+
+Grids start and end within the container patch's borders and rows and columns will be separated by uniform spacings according to the `spacing` field, if specified.
+
+Patches spanning multiple rows or columns may opt to inherit the containing patch's grid and spacing so as to define an area in a grid without needing to redefine the grid sizes and spacing. The special string value `parent` indicated this.
+
+Grid-related fields
+-------------------
+
+| Field | Type | Required | Description |
+| - | - | - | - |
+| **columns**<sup>2</sup><br>**width** | integer or array of integers or `"parent"` | no* | The widths in pixels of each column of the patch's grid. If set to "parent", the containing patch's horizontal grid and spacing will be used. |
+| **rows**<sup>2</sup><br>**height** | integer or array of integers or `"parent"` | no* | The heights in pixels of each row of the patch's grid. If set to "parent", the containing patch's vertical grid and spacing will be used. |
+| **border**<sup>2</sup> | integer or array of 2 integers | no | The vertical and horizontal border sizes, respectively, in pixels. The same value is used for both if specified as a single integer. |
+| **spacing**<sup>2</sup> | integer or array of 2 integers | no | The spacing between grid rows and columns, respectively, in pixels. The same value is used for both if specified as a single integer. |
+| **cell**<sup>2</sup> | array of 2 or 4 integers | no | Positions the patch at a particular row and column, respectively, within the containing patches grid rather than at the next cell position according to the left-to-right, top-to-bottom order. If 2 integers are specified, the patch will fill a single cell. If 4 integers are specified, the patch will span multiple cells where the 1st and 2nd integers specify the top-left cell's row and column and the 3rd and 4th integer specify the bottom-right cell's row and column for the range of cells being spanned.** |
+| **top**<br>**left**<br>**bottom**<br>**right** | integer | no | these are deprecated in version 2 in favour of the `cell` field and otherwise correspond to the top-left cell, except starting at row 0, column 0, and the bottom-right cell in the cell range, incremented by one. |
+
+(*) Only required at the top level. Will default to a single row or column taking up all the available space if not specified.
+
+(**) If `cell` is not specified, the cell will span the same number of rows and columns as the previous cell.
+
+Color patches
+-------------
+
+Each patch's background may be filled with either:
+- a solid color (`color`)
+- a horizontal ramp (`hramp`)
+- a vertical ramp (`vramp`)
+- a horizontal frequency grating (`hsquare`, `hsine` or `hcosine`)
+- a vertical frequency grating (`vsquare`, `vsine` or `vcosine`)
+
+If `border` has been specified, the border will drawn as part of the background and filled with the color `bordercolor`, if `bordercolor` has been specified, otherwise it is left as transparent.
+
+If the patch contains sub-patches, first the spacings will be filled using the color `bordercolor`, if `bordercolor` has been specified. Each sub-patch will then be drawn on top of the background.
+
+Lastly, if an `image` field is present, the specified image file will be overlaid onto the patch.
+
+Drawing and patch-related fields
+--------------------------------
+
+| Field | Type | Required | Description |
+| - | - | - | - |
+| **bordercolor**<sup>2</sup> | color (see [Specifying colors](#specifying-colors) below) | no | The border and spacing color. The borders and spacings will be transparent if not specified (black if it is the top-level border). |
+| **color** | color (see [Specifying colors](#specifying-colors) below) | no | The patch's solid background color. |
+| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | no | The patch's background horizontal gradient. |
+| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) below) | no | The patch's background vertical gradient. |
+| **hsquare**<sup>2</sup> | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | no | The patch's background horizontal square frequency grating. |
+| **vsquare**<sup>2</sup>| frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | no | The patch's background vertical square frequency grating. |
+| **hsine**<sup>2</sup><br>**hcosine**<sup>2</sup> | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | no | The patch's background horizontal sinusoidal frequency grating. |
+| **vsine**<sup>2</sup><br>**vcosine**<sup>2</sup> | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) below) | no | The patch's background vertical sinusoidal frequency grating. |
+| **image**<sup>2</sup> | string | no | A TIFF file to be composited onto the patch after sub-patches have been drawn. The path may be specified relative to T-PAT file. |
+| **premul**<sup>2</sup> | boolean | no | Whether the composited image is premultiplied by its alpha channel. |
+| **description**<sup>2</sup> | string | no | A description of the current patch. This overrides the containing patch's corresponding "descriptions" entry for this patch.* |
+| **descriptions**<sup>2</sup> | array of string | no | A description of the sub-patches. This must be the same length as the sub-patch array and "..." means "refer to another description for the patch with the same color value."* |
+| **patches**<sup>2</sup><br>**subpatches** | array of sub-patches (see [Sub-patches](#Sub-patches) below) | no | The patch's sub-patches. `subpatches` is deprecated in version 2 in favour of `patches`. |
+
+(*) Although description do not affect how test patterns are rendered, they may be used by future tools to automatically generate PDF or HTML specifications for the test pattern.
+
+Only one of `color`, `hramp`, `vramp`, `hsquare`, `vsquare`, `hsine`, `vsine`, `hcosine` or `vcosine` may be defined. If no background is specified, the patch's background color will be black.
 
 Specifying colors
 -----------------
@@ -61,44 +119,14 @@ Linear gradients, whether horizontal or vertical, are defined as an array of two
 Specifying frequency gratings
 -----------------------------
 
-Frequency gratings, whether horizontal or vertical, sinusoidal or square, are defined as a three-element array. The first element may either be an integer, float or a pair of integers or floats in an array. If the first element is a single value, it specifies the half-period of the gratings repetition in pixels, a half-period of 1 pixel representing the nyquist frequency. If the first element is a pair of values, these specify the starting and ending half-periods in a linear frequency sweep. The two subsequent elements specify the two colors the grating alternates between, the first one being the left-most or top-most color. `hcosine` and `vcosine` are equivalent to `hsine` and `vsine` with the only difference being the phase at which they start.
+Frequency gratings, whether horizontal or vertical, sinusoidal or square, are defined as a 3 or 4-element array. 3 elements specify a constant frequency followed by the 2 alternating colours whereas 4 elements specify the beginning and ending frequencies for a linear frequency sweep followed by the 2 alternating colours.
 
-Sub-patches
------------
+Frequencies are integers or floats specifying the half-period of the gratings repetition in pixels, a half-period of 1 pixel representing the nyquist frequency. 
 
-Each sub-patch may be defined as a simple color value (see [Specifying colors](#specifying-colors) above) or as a JSON object containing the fields described below. Sub-patches are always defined inside arrays and the first sub-patch defaults to filling the top-left cell in the containing patch's grid, while subsequent patches fill the grid in a left-to-right then top-to-bottom order. This allows Sub-patches to be simply listed as colors without the need to define each sub-patch's position explicitly.
+The last two elements specify the two colors the grating alternates between, the first one being the left-most or top-most color.
 
-| Field | Type | Version | Required | Description |
-| - | - | - | - | - |
-| **width** | integer, array of integers or "parent" | 1 | no | The widths in pixels of each column of the sub-patches inner grid. If set to "parent", the parent's horizontal grid and spacing will be used. |
-| **height** | integer, array of integers or "parent" | 1 | no | The heights in pixels of each row of the sub-patches inner grid. If set to "parent", the parent's vertical grid and spacing will be used. |
-| **border** | integer or array of 2 integers | 2 | no | The horizontal and vertical border size in pixels. The same value is used for both if specified as a single integer. |
-| **bordercolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The border color. Nothing will be draw in the borders if not specified. |
-| **spacing** | integer or array of 2 integers | 2 | no | The spacing between grid columns and rows in pixels. The same value is used for both if specified as a single integer. |
-| **spacingcolor** | color (see [Specifying colors](#specifying-colors) below) | 2 | no | The grid spacing color. Nothing will be draw in the spacings if not specified. |
-| **color** | color (see [Specifying colors](#specifying-colors) above) | 1 | no | The sub-patch's solid background color. |
-| **hramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background horizontal gradient. |
-| **vramp** | gradient (see [Specifying gradients](#specifying-gradients) above) | 1 | no | The sub-patch's background vertical gradient. |
-| **hsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background horizontal square frequency grating. |
-| **vsquare** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical square frequency grating. |
-| **hsine**<br>**hcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background horizontal sinusoidal frequency grating. |
-| **vsine**<br>**vcosine** | frequency grating (see [Specifying frequency gratings](#specifying-frequency-gratings) above) | 2 | no | The sub-patch's background vertical sinusoidal frequency grating. |
-| **image** | string | 2 | no | An 8-bit TIFF or PNG file to be composited onto the subpatch after child subpatches have been drawn. The path may be specified relative to T-PAT file. |
-| **premul** | boolean | 2 | no | Whether the composited image is premultiplied by its alpha channel. |
-| **description** | string | 2 | no | A description of the current sub-patch. This overrides the parents corresponding "descriptions" entry for this sub-patch.* |
-| **span** | array of 4 integers | 2 | no | The sub-patch's left, top, right and bottom positions in its containing patch's grid starting at 0. |
-| **left** | integer | 1 | no | The sub-patch's left position in its containing patch's grid starting at 0. |
-| **right** | integer | 1 | no | The sub-patch's right position in its containing patch's grid starting at 0. |
-| **top** | integer | 1 | no | The sub-patch's top position in its containing patch's grid starting at 0. |
-| **bottom** | integer | 1 | no | The sub-patch's bottom position in its containing patch's grid starting at 0. |
-| **subpatches** | array of sub-patches | 1 | no | The sub-patch's own sub-patches |
-| **descriptions** | array of string | 2 | no | A description of the sub-patches. This must be the same length as the sub-patch array and "..." means "refer to another description for the patch with the same color value."* |
-
-(*) These fields may be used to automatically generates a PDF specification for the test pattern.
-
-**left**, **top**, **right** and **bottom** are always expressed in cells of the containing patch. Specifying **left** or **top** overrides the sub-patch's default left or top positioning, respectively, which is always the next position along in the containing patch's grid, from left to right then from top to bottom. **right** and **bottom** override the sub-patch's default width and height which is otherwise inherited from the previous sub-patch. The width and height also determine the X and Y increment for the sub-patch's default location.
-
-As an example, if a sub-patch is located at row 1, column 2 and is 2 columns wide (`"top": 1, "left": 2, "right": 4`), the next sub-patch will be located, by default, at row 1, column 4 and will also be 2 columns wide. If the grid were only 5 columns wide, in order for it to not surpass the right edge of the grid, by default, the sub-patch would be re-positioned at the start of the next row: column 0, row 2.
+`hcosine` and `vcosine` are equivalent to `hsine` and `vsine` with the only difference being the phase at which they start.
+ No spatial filtering is used with `hsquare` and `vsquare`, it is therefore recommended to employ sinusoidal rather than square frequency sweeps.
 
 T-PAT file example
 ==================
@@ -109,23 +137,24 @@ Below are the contents of the file `3_squares.tpat` included in this repository.
 {
   "name": "3 squares",
   "depth": 32,
-  "width": [210, 360, 210, 360, 210, 360, 210],
-  "height": [360, 360, 360],
+  "width": 1920,
+  "height": 1080,
+  "rows": [360, 360, 360],
+  "columns": [210, 360, 210, 360, 210, 360, 210],
   "description": "Full screen horizontal ramp background",
   "hramp": [0, 1],
   "descriptions": ["50% grey", "...", "..."],
-  "subpatches": [
+  "patches": [
     {
-      "left": 1,
-      "top": 1,
+      "cell": [2, 2],
       "color": 0.5
     },
     {
-      "left": 3,
+      "cell": [2, 4],
       "color": 0.5
     },
     {
-      "left": 5,
+      "cell": [2, 6],
       "color": 0.5
     }
   ]

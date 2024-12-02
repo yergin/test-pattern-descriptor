@@ -61,30 +61,34 @@ def verticalRamp(image, col1, col2, is_float):
         image[y, :] = blendColors(col1, col2, y / (np.shape(image)[0] - 1), is_float)
 
 # Fill with horizontal frequency grating.
-def horizontalGrating(image, func, half_period, col1, col2, is_float):
-    if half_period == 1:
-        func = square
-    if hasattr(half_period, "__len__"):
-        f1 = 1.0 / half_period[0]
-        f2 = 1.0 / half_period[1]
+def horizontalGrating(image, func, tpat, is_float):
+    if len(tpat) == 3:
+        if tpat[0] == 1:
+            func = square
+        f1 = 1.0 / tpat[0]
+        f2 = 1.0 / tpat[0]
     else:
-        f1 = 1.0 / half_period
-        f2 = 1.0 / half_period
+        f1 = 1.0 / tpat[0]
+        f2 = 1.0 / tpat[1]
+    col1 = tpat[-2]
+    col2 = tpat[-1]
     width = np.shape(image)[1]
     a = (f2 - f1) / (width - 1)
     for x in range(width):
         image[:, x] = func(col1, col2, f1 * x + 0.5 * a * x * x, is_float)
 
 # Fill with horizontal frequency grating.
-def verticalGrating(image, func, half_period, col1, col2, is_float):
-    if half_period == 1:
-        func = square
-    if hasattr(half_period, "__len__"):
-        f1 = 1.0 / half_period[0]
-        f2 = 1.0 / half_period[1]
+def verticalGrating(image, func, tpat, is_float):
+    if len(tpat) == 3:
+        if tpat[0] == 1:
+            func = square
+        f1 = 1.0 / tpat[0]
+        f2 = 1.0 / tpat[0]
     else:
-        f1 = 1.0 / half_period
-        f2 = 1.0 / half_period
+        f1 = 1.0 / tpat[0]
+        f2 = 1.0 / tpat[1]
+    col1 = tpat[-2]
+    col2 = tpat[-1]
     height = np.shape(image)[0]
     a = (f2 - f1) / (height - 1)
     for y in range(height):
@@ -98,8 +102,8 @@ def borders(tpat):
     if 'border' in tpat:
         border = tpat['border']
         if hasattr(border, "__len__"):
-            hborder = border[0]
-            vborder = border[1]
+            hborder = border[1]
+            vborder = border[0]
         else:
             hborder = border
             vborder = border
@@ -111,18 +115,15 @@ def borders(tpat):
 def spacings(tpat, default_hspacing, default_vspacing):
     hspacing = 0 if default_hspacing is None else default_hspacing
     vspacing = 0 if default_vspacing is None else default_vspacing
-    spacing_color = None
     if 'spacing' in tpat:
         spacing = tpat['spacing']
         if hasattr(spacing, "__len__"):
-            hspacing = spacing[0]
-            vspacing = spacing[1]
+            hspacing = spacing[1]
+            vspacing = spacing[0]
         else:
             hspacing = spacing
             vspacing = spacing
-    if 'spacingcolor' in tpat:
-        spacing_color = asColor(tpat['spacingcolor'])
-    return (hspacing, vspacing, spacing_color)
+    return (hspacing, vspacing)
 
 def convert_bits(image, from_bits, to_bits):
     if from_bits == to_bits:
@@ -187,19 +188,19 @@ def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, paren
     elif 'vramp' in tpat:
         verticalRamp(rect[:], tpat['vramp'][0], tpat['vramp'][1], is_float)
     elif 'hsine' in tpat:
-        horizontalGrating(rect[:], sine, tpat['hsine'][0], tpat['hsine'][1], tpat['hsine'][2], is_float)
+        horizontalGrating(rect[:], sine, tpat['hsine'], is_float)
     elif 'vsine' in tpat:
-        verticalGrating(rect[:], sine, tpat['vsine'][0], tpat['vsine'][1], tpat['vsine'][2], is_float)
+        verticalGrating(rect[:], sine, tpat['vsine'], is_float)
     elif 'hcosine' in tpat:
-        horizontalGrating(rect[:], cosine, tpat['hcosine'][0], tpat['hcosine'][1], tpat['hcosine'][2], is_float)
+        horizontalGrating(rect[:], cosine, tpat['hcosine'], is_float)
     elif 'vcosine' in tpat:
-        verticalGrating(rect[:], cosine, tpat['vcosine'][0], tpat['vcosine'][1], tpat['vcosine'][2], is_float)
+        verticalGrating(rect[:], cosine, tpat['vcosine'], is_float)
     elif 'hsquare' in tpat:
-        horizontalGrating(rect[:], square, tpat['hsquare'][0], tpat['hsquare'][1], tpat['hsquare'][2], is_float)
+        horizontalGrating(rect[:], square, tpat['hsquare'], is_float)
     elif 'vsquare' in tpat:
-        verticalGrating(rect[:], square, tpat['vsquare'][0], tpat['vsquare'][1], tpat['vsquare'][2], is_float)
+        verticalGrating(rect[:], square, tpat['vsquare'], is_float)
 
-    if not 'width' in tpat and not 'height' in tpat:
+    if not 'columns' in tpat and not 'rows' in tpat and not 'width' in tpat and not 'height' in tpat:
         composite_image(rect, tpat, bits, directory)
         return # no subpatch grid has been defined
 
@@ -207,19 +208,31 @@ def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, paren
     heights = [height - 2 * vborder]
     default_hspacing = None
     default_vspacing = None
-    if 'width' in tpat:
+    if 'columns' in tpat:
+        if tpat['columns'] == 'parent':
+            widths = parent_widths
+            default_hspacing = parent_hspacing
+        else:
+            widths = asArray(tpat['columns'])
+    elif 'width' in tpat:
         if tpat['width'] == 'parent':
             widths = parent_widths
             default_hspacing = parent_hspacing
         else:
             widths = asArray(tpat['width'])
-    if 'height' in tpat:
+    if 'rows' in tpat:
+        if tpat['rows'] == 'parent':
+            heights = parent_heights
+            default_vspacing = parent_vspacing
+        else:
+            heights = asArray(tpat['rows'])
+    elif 'height' in tpat:
         if tpat['height'] == 'parent':
             heights = parent_heights
             default_vspacing = parent_vspacing
         else:
             heights = asArray(tpat['height'])
-    (hspacing, vspacing, spacing_color) = spacings(tpat, default_hspacing, default_vspacing)
+    (hspacing, vspacing) = spacings(tpat, default_hspacing, default_vspacing)
 
     # Interleave the grid widths with the border and spacings
     x = [b for a in widths for b in [a, hspacing]]
@@ -227,14 +240,14 @@ def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, paren
     x = np.cumsum([0] + x[:-1]) # calculate the grid of x offsets
     y = np.cumsum([0] + y[:-1]) # calculate the grid of y offsets
 
-    # Draw spacings if a color was specified
-    if not spacing_color is None:
+    # Draw spacings if a border color was specified
+    if not border_color is None:
         for i in range(2, len(x), 2):
-            rect[:, x[i - 1]:x[i]] = spacing_color
+            rect[:, x[i - 1]:x[i]] = border_color
         for i in range(2, len(y), 2):
-            rect[y[i - 1]:y[i], :] = spacing_color
+            rect[y[i - 1]:y[i], :] = border_color
 
-    if not 'subpatches' in tpat:
+    if not 'patches' in tpat and not 'subpatches' in tpat:
         composite_image(rect, tpat, bits, directory)
         return # there are no sub-patches so we return here
 
@@ -245,7 +258,7 @@ def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, paren
     hgt = 1
 
     # Iterate through each sub-patch.
-    for p in asArray(tpat['subpatches']):
+    for p in asArray(tpat['patches'] if 'patches' in tpat else tpat['subpatches']):
         if isinstance(p, dict):
             if 'left' in p:
                 left = p['left']
@@ -255,12 +268,16 @@ def drawPatch(image, tpat, parent_widths, parent_heights, parent_hspacing, paren
                 wid = p['right'] - left
             if 'bottom' in p:
                 hgt = p['bottom'] - top
-            if 'span' in p:
-                span = p['span']
-                left = span[0]
-                top = span[1]
-                wid = span[2] - left
-                hgt = span[3] - top
+            if 'cell' in p:
+                cell = p['cell']
+                top = cell[0] - 1
+                left = cell[1] - 1
+                if len(cell) == 4:
+                    hgt = cell[2] - top
+                    wid = cell[3] - left
+                else:
+                    wid = 1
+                    hgt = 1
 
         # The patch's rect in pixels.
         subpatch = rect[y[top * 2]:y[(top + hgt) * 2 - 1], x[left * 2]:x[(left + wid) * 2 - 1]]
@@ -304,7 +321,7 @@ def save_tiff(image, file_name, bits):
 
 def save_8bit(image, file_name, bits):
     if bits == 32:
-        image = np.round(image * 255 + 0.5).astype(np.uint8)
+        image = (image * 255 + 0.5).astype(np.uint8)
     elif bits > 8:
         image = (image * 255 / (2**bits - 1)).astype(np.uint8)
     Image.fromarray(image).save(file_name)
@@ -344,11 +361,21 @@ def tpat2tiff(tpat_in, tiff_out):
 
     # Sum the cell widths and heights to get the total image size.
     (hborder, vborder, _) = borders(tpat)
-    (hspacing, vspacing, _) = spacings(tpat, None, None)
-    widths = asArray(tpat['width'])
-    heights = asArray(tpat['height'])
+    (hspacing, vspacing) = spacings(tpat, None, None)
+    widths = asArray(tpat['columns'] if 'columns' in tpat else tpat['width'])
+    heights = asArray(tpat['rows'] if 'rows' in tpat else tpat['height'])
     width = sum(widths) + 2 * hborder + (len(widths) - 1) * hspacing
     height = sum(heights) + 2 * vborder + (len(heights) - 1) * vspacing
+
+    # Cross check the width and height if possible
+    if 'width' in tpat and 'columns' in tpat:
+        if tpat['width'] != width:
+            print(f"The calulated width ({width}) does not match the specified width ({tpat['width']})")
+            exit(1)
+    if 'height' in tpat and 'rows' in tpat:
+        if tpat['height'] != height:
+            print(f"The calulated height ({height}) does not match the specified height ({tpat['height']})")
+            exit(1)
 
     # Produce integer image data if the bit depth is 16 or less, other produce float image data.
     bits = tpat['depth']
