@@ -166,8 +166,8 @@ See the file `BT2111_HLG_10bit_narrow.tpat` for a more complete example.
 Generating test pattern TIFF images
 ===================================
 
-The python script `tpat2tiff.py` included in this repository generates a TIFF image file from a T-PAT file. Run the following command to generate a BT.2111 HLG 10-bit narrow-range test pattern image:
+The python script `tpat.py` included in this repository generates a TIFF image file from a T-PAT file. Run the following command to generate a BT.2111 HLG 10-bit narrow-range test pattern image:
 
 ```
-python3 tpat2tiff.py BT2111_HLG_10bit_narrow.tpat
+python tpat.py patterns/BT2111_HLG_10bit_narrow_1080.tpat
 ```

@@ -4,7 +4,7 @@
 """
 A python utility for rendering a Test Pattern Descriptor file to an image file.
 
-Usage: python tpat2tiff.py <tpat_file>
+Usage: python tpat.py <tpat_file>
 """
 
 __version__ = "2.0"
@@ -13,13 +13,13 @@ __maintainer__ = "Gino Bollaert"
 __email__ = "gino@orion-convert.com"
 
 
+import argparse
 import json
 import math
 import numpy as np
 import numpy.typing as npt
 import os
 import pathlib
-import sys
 import tifffile as tiff
 from jsonschema import validate
 from PIL import Image
@@ -585,27 +585,29 @@ def render_tpat(tpat_in: str) -> Tuple:
     return (image, bits, tpat['name'] if 'name' in tpat else None)
 
 
-def main():
-    if len(sys.argv) < 2:
-        print(f"Usage:  python {sys.argv[0]} <TPAT_file_in> [<TIFF_file_out>]")
-        exit(1)
-
-    tpat_in = sys.argv[1]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('tpat_in', help="Input T-PAT file")
+    parser.add_argument('-o', '--out', help="Output image file")
+    parser.add_argument('-p', '--preview', action='store_true',
+                        help="Render 8-bit preview (optional)")
+    parser.add_argument('-x', '--max', action='store_true',
+                        help="Scale to the maximum 16-bit value (optional)")
+    args = parser.parse_args()
 
     try:
-        (image, bits, name) = render_tpat(tpat_in)
+        (image, bits, name) = render_tpat(args.tpat_in)
 
         # If the TIFF's file name is not defined, use the T-PAT's 'name' field, otherwise use the
         # name of the T-PAT file itself.
-        base_file_name = name.replace(' ', '_') if not name is None else tpat_in[:-5]
-        tiff_out = sys.argv[2] if len(sys.argv) > 2 else base_file_name + '.tif'
+        base_file_name = name.replace(' ', '_') if not name is None else args.tpat_in[:-5]
+        if args.preview:
+            image_out = base_file_name + '.png' if args.out is None else args.out
+            save_8bit(image, bits, image_out)
+        else:
+            image_out = base_file_name + '.tif' if args.out is None else args.out
+            save_tiff(image, bits, image_out, args.max)
 
-        save_tiff(image, bits, tiff_out, True)
-        save_8bit(image, bits, base_file_name + '.png')
     except Exception as error:
         print(error)
         exit(1)
-
-
-if __name__ == "__main__":
-    main()
