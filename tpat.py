@@ -20,10 +20,9 @@ import numpy as np
 import numpy.typing as npt
 import os
 import pathlib
-import tifffile as tiff
 from jsonschema import validate
-from PIL import Image
 from typing import List, Dict, Tuple
+import imageio.v3 as iio
 
 
 def as_color(col: float | List[float]) -> List[float]:
@@ -287,8 +286,7 @@ def overlay_image(image: npt.NDArray, tpat: Dict, bits: int, directory: str) -> 
 
     # Load the image to be overlaid and determine its size and bit depth.
     path = path if os.path.isabs(path) else os.path.join(directory, path)
-    with Image.open(path) as im:
-        comp = np.array(im, dtype=np.uint8)
+    comp = iio.imread(path)
     [comp_hgt, comp_wid, comp_ch] = comp.shape
     if comp.dtype == np.float32 or comp.dtype == np.float64:
         from_bits = 32
@@ -513,7 +511,7 @@ def save_tiff(image: npt.NDArray, bits: int, file_path: str, max_16bit_scaling: 
         scaleDown = 0
     image = (image * scaleUp) + (image / scaleDown if scaleDown > 0 else 0)
 
-    tiff.imwrite(file_path, image.astype(bit_depth))
+    iio.imwrite(file_path, image.astype(bit_depth))
 
 
 def save_8bit(image: npt.NDArray, bits: int, file_path: str) -> None:
@@ -528,7 +526,7 @@ def save_8bit(image: npt.NDArray, bits: int, file_path: str) -> None:
         image = (image * 255 + 0.5).astype(np.uint8)
     elif bits > 8:
         image = (image * 255 / (2**bits - 1)).astype(np.uint8)
-    Image.fromarray(image).save(file_path)
+    iio.imwrite(file_path, image)
 
 
 def render_tpat(tpat_in: str) -> Tuple:
