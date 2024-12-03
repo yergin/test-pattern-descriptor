@@ -587,12 +587,12 @@ def render_tpat(tpat_in: str) -> Tuple:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('tpat_in', help="Input T-PAT file")
-    parser.add_argument('-o', '--out', help="Output image file")
+    parser.add_argument('tpat_in', help="input T-PAT file")
+    parser.add_argument('-o', '--out', help="output image file")
     parser.add_argument('-p', '--preview', action='store_true',
-                        help="Render 8-bit preview (optional)")
+                        help="render 8-bit preview (optional)")
     parser.add_argument('-x', '--max', action='store_true',
-                        help="Scale to the maximum 16-bit value (optional)")
+                        help="scale to the maximum 16-bit value (optional)")
     args = parser.parse_args()
 
     try:
