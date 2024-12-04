@@ -511,7 +511,11 @@ def save_tiff(image: npt.NDArray, bits: int, file_path: str, max_16bit_scaling: 
         scaleDown = 0
     image = (image * scaleUp) + (image / scaleDown if scaleDown > 0 else 0)
 
-    iio.imwrite(file_path, image.astype(bit_depth))
+    if file_path.lower()[-3:] == 'tif' or file_path.lower()[-4:] == 'tiff':
+        kwargs = {'compression': 8}
+    else:
+        kwargs = {}
+    iio.imwrite(file_path, image.astype(bit_depth), **kwargs)
 
 
 def save_8bit(image: npt.NDArray, bits: int, file_path: str) -> None:
