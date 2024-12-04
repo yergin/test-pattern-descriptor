@@ -594,7 +594,8 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--preview', action='store_true',
                         help="render 8-bit preview (optional)")
     parser.add_argument('-x', '--max', action='store_true',
-                        help="scale to the maximum 16-bit value (optional)")
+                        help=("scale to the maximum 16-bit value, recommented for video-range "
+                              "test patterns (optional)"))
     args = parser.parse_args()
 
     try:
