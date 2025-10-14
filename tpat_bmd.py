@@ -23,26 +23,45 @@ import blackmagic_output as bmo
 from blackmagic_output import BlackmagicOutput, DisplayMode, PixelFormat
 
 
-if __name__ == "__main__":
-    modes = {
-        '1080p25': DisplayMode.HD1080p25,
-        '1080p2997': DisplayMode.HD1080p2997,
-        '1080p30': DisplayMode.HD1080p30,
-        '1080p50': DisplayMode.HD1080p50,
-        '1080p5994': DisplayMode.HD1080p5994,
-        '1080p60': DisplayMode.HD1080p60,
-        '1080i50': DisplayMode.HD1080i50,
-        '1080i5994': DisplayMode.HD1080i5994,
-        '1080i60': DisplayMode.HD1080i60,
-        '2160p25': DisplayMode.Mode4K2160p25,
-        '2160p2997': DisplayMode.Mode4K2160p2997,
-        '2160p30': DisplayMode.Mode4K2160p30,
-        '2160p50': DisplayMode.Mode4K2160p50,
-        '2160p5994': DisplayMode.Mode4K2160p5994,
-        '2160p60': DisplayMode.Mode4K2160p60,
-    }
+DISPLAY_MODES = {
+    '1080p25': DisplayMode.HD1080p25,
+    '1080p2997': DisplayMode.HD1080p2997,
+    '1080p30': DisplayMode.HD1080p30,
+    '1080p50': DisplayMode.HD1080p50,
+    '1080p5994': DisplayMode.HD1080p5994,
+    '1080p60': DisplayMode.HD1080p60,
+    '1080i50': DisplayMode.HD1080i50,
+    '1080i5994': DisplayMode.HD1080i5994,
+    '1080i60': DisplayMode.HD1080i60,
+    '2160p25': DisplayMode.Mode4K2160p25,
+    '2160p2997': DisplayMode.Mode4K2160p2997,
+    '2160p30': DisplayMode.Mode4K2160p30,
+    '2160p50': DisplayMode.Mode4K2160p50,
+    '2160p5994': DisplayMode.Mode4K2160p5994,
+    '2160p60': DisplayMode.Mode4K2160p60,
+}
 
-    displaymode_options = list(modes.keys())
+PIXEL_FORMATS = {
+    'yuv10': PixelFormat.YUV10,
+    'rgb10': PixelFormat.RGB10,
+    'rgb12': PixelFormat.RGB12,
+}
+
+MATRICES = {
+    'rec709': bmo.Matrix.Rec709,
+    'rec2020': bmo.Matrix.Rec2020,
+}
+
+EOTFS = {
+    'sdr': bmo.Eotf.SDR,
+    'hlg': bmo.Eotf.HLG,
+    'pq': bmo.Eotf.PQ,
+}
+
+
+def main():
+    """Main function for the tpat_bmd utility."""
+    displaymode_options = list(DISPLAY_MODES.keys())
     pixelformat_options = ['YUV10', 'RGB10', 'RGB12']
     range_options = ['full', 'narrow']
     matrix_options = ['Rec709', 'Rec2020']
@@ -84,30 +103,28 @@ if __name__ == "__main__":
         with BlackmagicOutput() as output:
             output.initialize()
 
-            display_mode = modes[args.d]
+            display_mode = DISPLAY_MODES[args.d]
 
-            pixel_format_str = str(args.p).lower()
-            if pixel_format_str == 'rgb10':
-                pixel_format = PixelFormat.RGB10
-            elif pixel_format_str == 'rgb12':
-                pixel_format = PixelFormat.RGB12
-            else:
-                pixel_format = PixelFormat.YUV10
+            pixel_format = PIXEL_FORMATS.get(
+                str(args.p).lower(),
+                PixelFormat.YUV10
+            )
 
-            narrow_range = (str(args.r).lower() == 'narrow' or 'narrow' in name.lower()) and 'full' not in name.lower()
+            narrow_range = (
+                (str(args.r).lower() == 'narrow' or 'narrow' in name.lower())
+                and 'full' not in name.lower()
+            )
 
-            if str(args.m).lower() == 'rec2020':
-                matrix = bmo.Matrix.Rec2020
-            else:
-                matrix = bmo.Matrix.Rec709
+            matrix = MATRICES.get(
+                str(args.m).lower(),
+                bmo.Matrix.Rec709
+            )
 
-            eotf_str = str(args.e).lower()
-            if eotf_str == 'hlg':
-                eotf = {'eotf': bmo.Eotf.HLG}
-            elif eotf_str == 'pq':
-                eotf = {'eotf': bmo.Eotf.PQ}
-            else:
-                eotf = {'eotf': bmo.Eotf.SDR}
+            eotf_value = EOTFS.get(
+                str(args.e).lower(),
+                bmo.Eotf.SDR
+            )
+            eotf = {'eotf': eotf_value}
 
             output.display_static_frame(
                 image,
@@ -125,3 +142,7 @@ if __name__ == "__main__":
     except Exception as error:
         print(error)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
