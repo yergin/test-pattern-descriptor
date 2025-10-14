@@ -166,8 +166,21 @@ See the file `BT2111_HLG_10bit_narrow.tpat` for a more complete example.
 Generating test pattern TIFF images
 ===================================
 
-The python script `tpat.py` included in this repository generates a TIFF image file from a T-PAT file. Run the following command to generate a BT.2111 HLG 10-bit narrow-range test pattern image:
+The Python script `tpat.py` included in this repository generates a TIFF image file from a T-PAT file. Run the following command to generate a BT.2111 HLG 10-bit narrow-range test pattern image:
 
 ```
 python tpat.py patterns/BT2111_HLG_10bit_narrow_1080.tpat
 ```
+
+Displaying test patterns on Blackmagic devices
+==============================================
+
+The Python script `tpat_bmd.py` included in this repository renders a TPAT to a Blackmagic video output device, with user selected settings and metadata.
+
+The command below will display the BT2111 HLG test pattern in 1080p25 10-bit Y'CbCr, using a Rec.2020 matrix and flagging the EOTF as HLG in the metadata.
+
+```
+python tpat_bmd.py patterns/BT2111_HLG_10bit_narrow_1080.tpat -d 1080p25 -p YUV10 -r narrow -m Rec2020 -e HLG
+```
+
+It requires the Python Blackmagic output library which can be found at https://github.com/nick-shaw/blackmagic-decklink-output. That repo is private at this time, but if you wish to test it before it is made public, email nick@antlerpost.com.
