@@ -16,6 +16,7 @@ __email__ = "nick@orion-convert.com"
 
 
 import argparse
+import sys
 import numpy as np
 from tpat import render_tpat
 import blackmagic_output as bmo
@@ -40,16 +41,17 @@ if __name__ == "__main__":
         '2160p5994': DisplayMode.Mode4K2160p5994,
         '2160p60': DisplayMode.Mode4K2160p60,
     }
-    
+
     displaymode_options = list(modes.keys())
     pixelformat_options = ['YUV10', 'RGB10', 'RGB12']
     range_options = ['full', 'narrow']
     matrix_options = ['Rec709', 'Rec2020']
     eotf_options = ['SDR', 'HLG', 'PQ']
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('tpat_in', help="input T-PAT file")
     parser.add_argument('-d',
+                        required=True,
                         choices=displaymode_options,
                         help="display mode"
                         )
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     parser.add_argument('-r',
                         choices=range_options,
                         default='narrow',
-                        help="range (optional) Default: narrow. Overriden if full/narrow in TPAT name"
+                        help="range (optional) Default: narrow. Overridden if full/narrow in TPAT name"
     )
     parser.add_argument('-m',
                         choices=matrix_options,
@@ -92,7 +94,7 @@ if __name__ == "__main__":
             else:
                 pixel_format = PixelFormat.YUV10
 
-            narrow_range = (str(args.r).lower() == 'narrow' or 'narrow' in name.lower()) and not 'full' in name.lower()
+            narrow_range = (str(args.r).lower() == 'narrow' or 'narrow' in name.lower()) and 'full' not in name.lower()
 
             if str(args.m).lower() == 'rec2020':
                 matrix = bmo.Matrix.Rec2020
@@ -115,11 +117,11 @@ if __name__ == "__main__":
                 hdr_metadata=eotf,
                 narrow_range=narrow_range
             )
-            
+
             input("Press Enter to stop...")
 
             output.display_solid_color((0.0, 0.0, 0.0), display_mode)
 
     except Exception as error:
         print(error)
-        exit(1)
+        sys.exit(1)
