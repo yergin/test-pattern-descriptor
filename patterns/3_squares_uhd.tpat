@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "3 squares",
+  "depth": 32,
+  "width": 3840,
+  "height": 2160,
+  "rows": [720, 720, 720],
+  "columns": [420, 720, 420, 720, 420, 720, 420],
+  "description": "Full screen horizontal ramp background",
+  "hramp": [0, 1],
+  "descriptions": ["50% grey", ".", "."],
+  "patches": [
+    {
+      "cell": [2, 2],
+      "color": 0.5
+    },
+    {
+      "cell": [2, 4],
+      "color": 0.5
+    },
+    {
+      "cell": [2, 6],
+      "color": 0.5
+    }
+  ]
+}

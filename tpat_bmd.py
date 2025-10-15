@@ -6,7 +6,7 @@ A python utility for rendering a Test Pattern Descriptor file to Blackmagic Deck
 
 Requires https://github.com/nick-shaw/blackmagic-decklink-output
 
-Usage: python tpat_bmd.py <tpat_file> -d <display_mode> [-p <pixel_format>] [-r <range>] [-m <matrix>] [-e <eotf>]
+Usage: python tpat_bmd.py <tpat_file> <display_mode> [-p <pixel_format>] [-r <range>] [-m <matrix>] [-e <eotf>]
 """
 
 __version__ = "2.0"
@@ -16,6 +16,7 @@ __email__ = "nick@orion-convert.com"
 
 
 import argparse
+import json
 import sys
 import numpy as np
 from tpat import render_tpat
@@ -69,8 +70,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('tpat_in', help="input T-PAT file")
-    parser.add_argument('-d',
-                        required=True,
+    parser.add_argument('display_mode',
                         choices=displaymode_options,
                         help="display mode"
                         )
@@ -81,49 +81,75 @@ def main():
     )
     parser.add_argument('-r',
                         choices=range_options,
-                        default='narrow',
-                        help="range (optional) Default: narrow. Overridden if full/narrow in TPAT name"
+                        default=None,
+                        help="range (optional) Overrides TPAT file range tag if specified"
     )
     parser.add_argument('-m',
                         choices=matrix_options,
-                        default='Rec709',
-                        help="matrix (optional) Default: Rec709"
+                        default=None,
+                        help="matrix (optional) Overrides TPAT file matrix tag if specified"
     )
     parser.add_argument('-e',
                         choices=eotf_options,
-                        default='SDR',
-                        help="eotf (optional) Default: SDR"
+                        default=None,
+                        help="eotf (optional) Overrides TPAT file eotf tag if specified"
     )
     args = parser.parse_args()
 
     try:
+        # Load TPAT file to read metadata
+        with open(args.tpat_in) as f:
+            tpat_data = json.load(f)
+
         (image, bits, name) = render_tpat(args.tpat_in)
         if bits < 32:
             image = image.astype(np.uint16) << (16 - bits)
         with BlackmagicOutput() as output:
             output.initialize()
 
-            display_mode = DISPLAY_MODES[args.d]
+            display_mode = DISPLAY_MODES[args.display_mode]
 
             pixel_format = PIXEL_FORMATS.get(
                 str(args.p).lower(),
                 PixelFormat.YUV10
             )
 
-            narrow_range = (
-                (str(args.r).lower() == 'narrow' or 'narrow' in name.lower())
-                and 'full' not in name.lower()
-            )
+            # Determine narrow_range: -r flag overrides TPAT file's range tag
+            if args.r is not None:
+                # Command line argument takes precedence
+                narrow_range = str(args.r).lower() == 'narrow'
+            elif 'range' in tpat_data:
+                # Use range from TPAT file
+                narrow_range = str(tpat_data['range']).lower() == 'narrow'
+            else:
+                # Default to narrow range if neither specified
+                narrow_range = True
 
-            matrix = MATRICES.get(
-                str(args.m).lower(),
-                bmo.Matrix.Rec709
-            )
+            # Determine matrix: -m flag overrides TPAT file's matrix tag
+            if args.m is not None:
+                # Command line argument takes precedence
+                matrix_str = str(args.m).lower()
+            elif 'matrix' in tpat_data:
+                # Use matrix from TPAT file
+                matrix_str = str(tpat_data['matrix']).lower()
+            else:
+                # Default to Rec709
+                matrix_str = 'rec709'
 
-            eotf_value = EOTFS.get(
-                str(args.e).lower(),
-                bmo.Eotf.SDR
-            )
+            matrix = MATRICES.get(matrix_str, bmo.Matrix.Rec709)
+
+            # Determine eotf: -e flag overrides TPAT file's eotf tag
+            if args.e is not None:
+                # Command line argument takes precedence
+                eotf_str = str(args.e).lower()
+            elif 'eotf' in tpat_data:
+                # Use eotf from TPAT file
+                eotf_str = str(tpat_data['eotf']).lower()
+            else:
+                # Default to SDR
+                eotf_str = 'sdr'
+
+            eotf_value = EOTFS.get(eotf_str, bmo.Eotf.SDR)
             eotf = {'eotf': eotf_value}
 
             output.display_static_frame(
