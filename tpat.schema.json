@@ -255,6 +255,17 @@
         32
       ]
     },
+    "range": {
+      "type": "string",
+      "enum": ["full", "narrow"]
+    },
+    "matrix": {
+      "type": "string",
+      "enum": ["Rec.709", "Rec.2020"]
+    },
+    "eotf": {
+      "type": "string"
+    },
     "width": {
       "$ref": "#/definitions/subpatchDimension"
     },
