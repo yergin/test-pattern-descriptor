@@ -97,7 +97,6 @@ def main():
     args = parser.parse_args()
 
     try:
-        # Load TPAT file to read metadata
         with open(args.tpat_in) as f:
             tpat_data = json.load(f)
 
@@ -116,37 +115,28 @@ def main():
 
             # Determine narrow_range: -r flag overrides TPAT file's range tag
             if args.r is not None:
-                # Command line argument takes precedence
                 narrow_range = str(args.r).lower() == 'narrow'
             elif 'range' in tpat_data:
-                # Use range from TPAT file
                 narrow_range = str(tpat_data['range']).lower() == 'narrow'
             else:
-                # Default to narrow range if neither specified
                 narrow_range = True
 
             # Determine matrix: -m flag overrides TPAT file's matrix tag
             if args.m is not None:
-                # Command line argument takes precedence
                 matrix_str = str(args.m).lower()
             elif 'matrix' in tpat_data:
-                # Use matrix from TPAT file
                 matrix_str = str(tpat_data['matrix']).lower()
             else:
-                # Default to Rec709
                 matrix_str = 'rec709'
 
             matrix = MATRICES.get(matrix_str, bmo.Matrix.Rec709)
 
             # Determine eotf: -e flag overrides TPAT file's eotf tag
             if args.e is not None:
-                # Command line argument takes precedence
                 eotf_str = str(args.e).lower()
             elif 'eotf' in tpat_data:
-                # Use eotf from TPAT file
                 eotf_str = str(tpat_data['eotf']).lower()
             else:
-                # Default to SDR
                 eotf_str = 'sdr'
 
             eotf_value = EOTFS.get(eotf_str, bmo.Eotf.SDR)
