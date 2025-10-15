@@ -1,7 +1,7 @@
 "T-PAT": Test Pattern Descriptor Specification V2
 =================================================
 
-*Updated: 2024-12-01*
+*Updated: 2025-10-15*
 
 The purpose of T-PAT (**T**est **PAT**tern) files is to concisely describe the positioning and colors of rectangular color patches in a test pattern image. They can serve as specifications from which test pattern images can be generated. T-PAT files are JSON files with a `.tpat` extension.
 
@@ -17,6 +17,9 @@ General top-level fields
 | **version** | integer | no | The T-PAT version number (defaults to 1 if omitted). |
 | **name** | string | no | A name describing the test pattern. |
 | **depth** | integer | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
+| **range<sup>2</sup>** | string | no | The range of the data in the test pattern - either "full" or "narrow".
+| **matrix<sup>2</sup>** | string | no | The Y'CbCr matrix to be used when outputting the test pattern - either "Rec709" or "Rec2020".
+| **eotf<sup>2</sup>** | string | no | The EOTF of the test pattern. "SDR", "PQ" or "HLG" may be signalled in a VPID. Other values are informative only at this time, but may be used in future workflows.
 | **columns**<sup>2</sup><br>**width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid. |
 | **rows**<sup>2</sup><br>**height** | integer or array of integers | yes | The heights in pixels of each row of the image's grid. |
 | **border**<sup>2</sup> | integer or array of 2 integers | no | The vertical and horizontal border sizes, respectively, in pixels. The same value is used for both if specified as a single integer. |
@@ -175,12 +178,14 @@ python tpat.py patterns/BT2111_HLG_10bit_narrow_1080.tpat
 Displaying test patterns on Blackmagic devices
 ==============================================
 
-The Python script `tpat_bmd.py` included in this repository renders a TPAT to a Blackmagic video output device, with user selected settings and metadata.
+The Python script `tpat_bmd.py` included in this repository renders a T-PAT to a Blackmagic video output device.
 
-The command below will display the BT2111 HLG test pattern in 1080p25 10-bit Y'CbCr, using a Rec.2020 matrix and flagging the EOTF as HLG in the metadata.
+The command below will display the BT2111 HLG test pattern in 1080p25 10-bit Y'CbCr, using a Rec.2020 matrix and flagging the EOTF as HLG in the metadata, based on the tags in the T-PAT.
 
 ```
-python tpat_bmd.py patterns/BT2111_HLG_10bit_narrow_1080.tpat -d 1080p25 -p YUV10 -r narrow -m Rec2020 -e HLG
+python tpat_bmd.py patterns/BT2111_HLG_10bit_narrow_1080.tpat 1080p25
 ```
+
+Run python `tpat_bmd.py -h` to see the options, including how to override the range, matrix or EOTF from the T-PAT.
 
 It requires the Python Blackmagic output library which can be found at https://github.com/nick-shaw/blackmagic-decklink-output. That repo is private at this time, but if you wish to test it before it is made public, email nick@antlerpost.com.
