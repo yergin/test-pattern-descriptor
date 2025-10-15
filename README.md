@@ -186,6 +186,6 @@ The command below will display the BT2111 HLG test pattern in 1080p25 10-bit Y'C
 python tpat_bmd.py patterns/BT2111_HLG_10bit_narrow_1080.tpat 1080p25
 ```
 
-Run python `tpat_bmd.py -h` to see the options, including how to override the range, matrix or EOTF from the T-PAT.
+Run `python tpat_bmd.py -h` to see the options, including how to override the range, matrix or EOTF from the T-PAT.
 
 It requires the Python Blackmagic output library which can be found at https://github.com/nick-shaw/blackmagic-decklink-output. That repo is private at this time, but if you wish to test it before it is made public, email nick@antlerpost.com.
