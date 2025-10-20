@@ -1,7 +1,7 @@
 "T-PAT": Test Pattern Descriptor Specification V2
 =================================================
 
-*Updated: 2024-12-01*
+*Updated: 2025-10-20*
 
 The purpose of T-PAT (**T**est **PAT**tern) files is to concisely describe the positioning and colors of rectangular color patches in a test pattern image. They can serve as specifications from which test pattern images can be generated. T-PAT files are JSON files with a `.tpat` extension.
 
