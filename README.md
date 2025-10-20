@@ -17,6 +17,12 @@ General top-level fields
 | **version** | integer | no | The T-PAT version number (defaults to 1 if omitted). |
 | **name** | string | no | A name describing the test pattern. |
 | **depth** | integer | yes | The bit depth of the color data - either 8, 10, 12, 16 or 32(float). |
+| **range<sup>2</sup>** | string | no | The range of the data in the test pattern - either "full" or "narrow".
+| **matrix<sup>2</sup>** | string | no | The Y'CbCr matrix to be used when outputting the test pattern - either "Rec709" or "Rec2020".
+| **eotf<sup>2</sup>** | string | no | The EOTF of the test pattern. "SDR", "PQ" or "HLG" may be signalled in a VPID. Other values are informative only at this time, but may be used in future workflows.
+| **columns**<sup>2</sup><br>**width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid. |
+| **rows**<sup>2</sup><br>**height** | integer or array of integers | yes | The heights in pixels of each row of the image's grid. |
+| **border**<sup>2</sup> | integer or array of 2 integers | no | The vertical and horizontal border sizes, respectively, in pixels. The same value is used for both if specified as a single integer. 
 | **columns**<sup>2</sup><br>**width** | integer or array of integers | yes | The widths in pixels of each column of the image's grid. |
 | **rows**<sup>2</sup><br>**height** | integer or array of integers | yes | The heights in pixels of each row of the image's grid. |
 | **border**<sup>2</sup> | integer or array of 2 integers | no | The vertical and horizontal border sizes, respectively, in pixels. The same value is used for both if specified as a single integer. |
