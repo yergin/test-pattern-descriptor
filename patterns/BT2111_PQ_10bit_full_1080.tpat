@@ -4,7 +4,7 @@
   "depth": 10,
   "range": "full",
   "eotf": "PQ",
-  "matrix": "Rec.2020",
+  "matrix": "Rec2020",
   "width": 1920,
   "height": 1080,
   "rows": [630, 90, 90, 270],

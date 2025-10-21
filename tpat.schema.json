@@ -261,7 +261,7 @@
     },
     "matrix": {
       "type": "string",
-      "enum": ["Rec.709", "Rec.2020"]
+      "enum": ["Rec709", "Rec2020"]
     },
     "eotf": {
       "type": "string"
