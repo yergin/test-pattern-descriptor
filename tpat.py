@@ -527,9 +527,9 @@ def save_8bit(image: npt.NDArray, bits: int, file_path: str) -> None:
         file_path (str): The output file path.
     """
     if bits == 32:
-        image = (image * 255 + 0.5).astype(np.uint8)
+        image = np.clip(image * 255 + 0.5, 0, 255).astype(np.uint8)
     elif bits > 8:
-        image = (image * 255 / (2**bits - 1)).astype(np.uint8)
+        image = np.clip(image * 255 / (2**bits - 1), 0, 255).astype(np.uint8)
     iio.imwrite(file_path, image)
 
 
