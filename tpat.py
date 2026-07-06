@@ -500,7 +500,7 @@ def draw_patch(image: npt.NDArray,
             top += hgt
 
     # Composite an image on the patch, if specified.
-    overlay_image(rect, tpat, bits, directory)
+    overlay_image(rect, tpat, bits, directory, rng)
 
 
 def save_tiff(image: npt.NDArray, bits: int, file_path: str, max_16bit_scaling: bool) -> None:
