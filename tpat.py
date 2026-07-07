@@ -256,10 +256,9 @@ def convert_bits(image: npt.NDArray, from_bits: int, to_bits: int,
         image (npt.NDArray): The source image.
         from_bits (int): The input bit depth (8, 10, 12, 16 or 32).
         to_bits (int): The output bit depth (8, 10, 12, 16 or 32).
-        rng (str): 'full' (default) rescales endpoint-to-endpoint
-            (0..max -> 0..max); 'narrow' preserves video reference levels
-            (16/235 <-> 64/940 …) by a power-of-two shift. Range only affects
-            integer<->integer conversions.
+        rng (str): 'full' (default) rescales endpoint-to-endpoint; 'narrow'
+            preserves video reference levels by a power-of-two shift. Only
+            affects integer<->integer conversions.
 
     Returns:
         npt.NDArray: The converted image.
@@ -267,9 +266,8 @@ def convert_bits(image: npt.NDArray, from_bits: int, to_bits: int,
     if from_bits == to_bits:
         return image
     if rng == 'narrow' and from_bits != 32 and to_bits != 32:
-        # Narrow (video) range: a shift preserves the reference levels exactly
-        # (e.g. 8-bit white 235 -> 235<<2 = 940 at 10-bit). Widen first so the
-        # left shift can't overflow the source dtype.
+        # Narrow range: a shift preserves reference levels (e.g. 235 -> 940
+        # for 8->10 bit). Widen to int64 first so the shift can't overflow.
         v = image.astype(np.int64)
         s = to_bits - from_bits
         return (v << s) if s > 0 else ((v + (1 << (-s - 1))) >> -s)
@@ -289,9 +287,8 @@ def overlay_image(image: npt.NDArray, tpat: Dict, bits: int, directory: str,
         tpat (Dict): The patch's loaded dictionary.
         bits (int): The resulting image's bit depth.
         directory (str): The base directory for resolving relative paths.
-        rng (str): The chart's range ('full' or 'narrow'); the overlay's RGB is
-            depth-converted range-aware to match, so narrow overlay levels land
-            correctly (8-bit white 235 -> 940 at 10-bit narrow).
+        rng (str): The chart's range ('full' or 'narrow'), passed through to
+            convert_bits so the overlay is depth-matched range-aware.
     """
     if not 'image' in tpat:
         return  # no image to overlay.
@@ -319,16 +316,15 @@ def overlay_image(image: npt.NDArray, tpat: Dict, bits: int, directory: str,
     # Obtain the destination image area for the overlay.
     rect = image[y:y + comp_hgt, x:x + comp_wid]
 
-    # If the overlay has no alpha channel, replace the image area with the overlay,
-    # depth-converted range-aware to match the chart (narrow = shift, full = rescale).
+    # If the overlay has no alpha channel, replace the image area with the
+    # overlay, depth-converted (range-aware) to the chart's bit depth.
     if comp_ch == 3:
         rect[:] = convert_bits(comp, from_bits, bits, rng)
         return
 
     # RGBA: composite in the destination's code space. The overlay's RGB is
-    # depth-converted range-aware to the chart's range (so narrow 8-bit white 235
-    # -> 940 at 10-bit); alpha is a linear 0..1 coverage fraction, independent of
-    # range. For a 32-bit float destination the blend is done in 0..1.
+    # depth-converted range-aware to the chart; alpha is a linear 0..1 coverage
+    # fraction, independent of range. A 32-bit float destination blends in 0..1.
     rgb = convert_bits(comp[..., :3], from_bits, bits, rng).astype(np.float64)
     a = comp[..., 3:4].astype(np.float64) / (2 ** from_bits - 1)
     dest = rect if bits == 32 else rect.astype(np.float64)
