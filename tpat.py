@@ -248,19 +248,29 @@ def spacing_settings(tpat: Dict,
     return (hspacing, vspacing)
 
 
-def convert_bits(image: npt.NDArray, from_bits: int, to_bits: int) -> npt.NDArray:
-    """Convert an image from one bit depth to another.
+def convert_bits(image: npt.NDArray, from_bits: int, to_bits: int,
+                 rng: str = 'full') -> npt.NDArray:
+    """Convert an image from one bit depth to another, range-aware.
 
     Args:
         image (npt.NDArray): The source image.
         from_bits (int): The input bit depth (8, 10, 12, 16 or 32).
         to_bits (int): The output bit depth (8, 10, 12, 16 or 32).
+        rng (str): 'full' (default) rescales endpoint-to-endpoint; 'narrow'
+            preserves video reference levels by a power-of-two shift. Only
+            affects integer<->integer conversions.
 
     Returns:
         npt.NDArray: The converted image.
     """
     if from_bits == to_bits:
         return image
+    if rng == 'narrow' and from_bits != 32 and to_bits != 32:
+        # Narrow range: a shift preserves reference levels (e.g. 235 -> 940
+        # for 8->10 bit). Widen to int64 first so the shift can't overflow.
+        v = image.astype(np.int64)
+        s = to_bits - from_bits
+        return (v << s) if s > 0 else ((v + (1 << (-s - 1))) >> -s)
     if to_bits == 32:
         return image.astype(np.float32) / (2**from_bits - 1)
     if from_bits == 32:
@@ -268,7 +278,8 @@ def convert_bits(image: npt.NDArray, from_bits: int, to_bits: int) -> npt.NDArra
     return convert_bits(convert_bits(image, from_bits, 32), 32, to_bits)
 
 
-def overlay_image(image: npt.NDArray, tpat: Dict, bits: int, directory: str) -> None:
+def overlay_image(image: npt.NDArray, tpat: Dict, bits: int, directory: str,
+                  rng: str = 'full') -> None:
     """Composite an image file onto a source image.
 
     Args:
@@ -276,6 +287,8 @@ def overlay_image(image: npt.NDArray, tpat: Dict, bits: int, directory: str) -> 
         tpat (Dict): The patch's loaded dictionary.
         bits (int): The resulting image's bit depth.
         directory (str): The base directory for resolving relative paths.
+        rng (str): The chart's range ('full' or 'narrow'), passed through to
+            convert_bits so the overlay is depth-matched range-aware.
     """
     if not 'image' in tpat:
         return  # no image to overlay.
@@ -303,22 +316,20 @@ def overlay_image(image: npt.NDArray, tpat: Dict, bits: int, directory: str) -> 
     # Obtain the destination image area for the overlay.
     rect = image[y:y + comp_hgt, x:x + comp_wid]
 
-    # If the overlay has no alpha channel, replace the image area with the overlay.
+    # If the overlay has no alpha channel, replace the image area with the
+    # overlay, depth-converted (range-aware) to the chart's bit depth.
     if comp_ch == 3:
-        rect[:] = convert_bits(comp, from_bits, bits)
+        rect[:] = convert_bits(comp, from_bits, bits, rng)
         return
 
-    # Convert the image area and overlay to floating point.
-    comp = convert_bits(comp, from_bits, 32)
-    dest = convert_bits(rect, bits, 32)
-
-    # Split the alpha from the RGB channels
-    r, g, b, a = np.dsplit(comp, 4)
-    rgb = np.dstack((r, g, b))
-
-    # Blend the images and replace the image area with the result convert to the original bit depth.
-    rgb = dest * (1 - a) + (rgb if premul else a * rgb)
-    rect[:] = convert_bits(rgb, 32, bits)
+    # RGBA: composite in the destination's code space. The overlay's RGB is
+    # depth-converted range-aware to the chart; alpha is a linear 0..1 coverage
+    # fraction, independent of range. A 32-bit float destination blends in 0..1.
+    rgb = convert_bits(comp[..., :3], from_bits, bits, rng).astype(np.float64)
+    a = comp[..., 3:4].astype(np.float64) / (2 ** from_bits - 1)
+    dest = rect if bits == 32 else rect.astype(np.float64)
+    out = dest * (1 - a) + (rgb if premul else a * rgb)
+    rect[:] = out if bits == 32 else np.floor(out + 0.5).astype(rect.dtype)
 
 
 def draw_patch(image: npt.NDArray,
@@ -328,7 +339,8 @@ def draw_patch(image: npt.NDArray,
                parent_columns: List[int] = None,
                parent_rows: List[int] = None,
                parent_hspacing: int = None,
-               parent_vspacing: int = None) -> None:
+               parent_vspacing: int = None,
+               rng: str = 'full') -> None:
     """A recursive function for drawing patches.
 
     Args:
@@ -376,7 +388,7 @@ def draw_patch(image: npt.NDArray,
         vertical_grating(rect[:], square_wave, tpat['vsquare'], is_float)
 
     if not any(x in tpat for x in ['columns', 'rows', 'width', 'height']):
-        overlay_image(rect, tpat, bits, directory)
+        overlay_image(rect, tpat, bits, directory, rng)
         return  # no subpatch grid has been defined
 
     # Calculate default grid size.
@@ -431,7 +443,7 @@ def draw_patch(image: npt.NDArray,
             rect[y[i - 1]:y[i], :] = border_color
 
     if not 'patches' in tpat and not 'subpatches' in tpat:
-        overlay_image(rect, tpat, bits, directory)
+        overlay_image(rect, tpat, bits, directory, rng)
         return  # there are no sub-patches so we return here
 
     # Default rect, in grid cells not pixels, of the first sub-patch.
@@ -469,7 +481,7 @@ def draw_patch(image: npt.NDArray,
         if isinstance(p, dict):
             # The sub-patch is defined as a dict, therefore recurse
             draw_patch(subpatch, bits, p, directory, widths[left:left + wid],
-                       heights[top:top + hgt], hspacing, vspacing)
+                       heights[top:top + hgt], hspacing, vspacing, rng)
         else:
             # the sub-patch is defined as a color value
             subpatch[:] = as_color(p)
@@ -484,7 +496,7 @@ def draw_patch(image: npt.NDArray,
             top += hgt
 
     # Composite an image on the patch, if specified.
-    overlay_image(rect, tpat, bits, directory)
+    overlay_image(rect, tpat, bits, directory, rng)
 
 
 def save_tiff(image: npt.NDArray, bits: int, file_path: str, max_16bit_scaling: bool) -> None:
@@ -582,7 +594,8 @@ def render_tpat(tpat_in: str) -> Tuple:
     bits = tpat['depth']
     image = np.zeros((height, width, 3),
                      np.int32 if bits <= 16 else np.float32)
-    draw_patch(image, bits, tpat, pathlib.Path(tpat_in).parent.resolve())
+    draw_patch(image, bits, tpat, pathlib.Path(tpat_in).parent.resolve(),
+               rng=tpat.get('range', 'full'))
 
     return (image, bits, tpat['name'] if 'name' in tpat else None)
 
